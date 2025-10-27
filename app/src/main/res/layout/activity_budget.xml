@@ -1,26 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:background="@color/backgroundLight"
+    android:background="@drawable/gradient_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".BudgetActivity">
+    android:padding="12dp">
 
-    <!-- ✅ Toolbar (ConstraintLayout with full constraints) -->
+    <!-- Toolbar (simple) -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/toolbarBudget"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/appBarBackground"
-        android:elevation="4dp"
-        android:paddingVertical="10dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp">
+        android:layout_height="56dp"
+        android:background="@color/appBarBackground">
 
-        <!-- Menu Icon (Left) -->
         <ImageView
             android:id="@+id/btnMenu"
             android:layout_width="24dp"
@@ -29,25 +21,21 @@
             app:tint="@color/textPrimary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <!-- Title (Center) -->
         <TextView
-            android:id="@+id/tvTitle"
+            android:id="@+id/toolbarTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingHorizontal="8dp"
-            android:text="Budget Buddy"
-            android:textColor="@color/textPrimary"
-            android:textSize="20sp"
+            android:text="@string/app_name"
+            android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@id/btnMenu"
             app:layout_constraintEnd_toStartOf="@id/btnSearch"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:gravity="center"/>
 
-        <!-- Search Icon (Right) -->
         <ImageView
             android:id="@+id/btnSearch"
             android:layout_width="24dp"
@@ -56,182 +44,45 @@
             app:tint="@color/textPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- ✅ Budget Summary -->
+    <!-- Summary -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_card"
         android:orientation="horizontal"
         android:padding="12dp"
-        android:weightSum="2">
+        android:layout_marginTop="10dp">
 
-        <!-- Total Budget -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TOTAL BUDGET"
-                android:textColor="@color/textPrimary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvTotalBudget"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="₱150.00"
-                android:textColor="@color/incomeValue"
-                android:textSize="18sp" />
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/total_budget" android:textStyle="bold"/>
+            <EditText android:id="@+id/editTotalBudget" android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="@string/hint_enter_amount" android:inputType="numberDecimal" android:textColor="@color/incomeValue"/>
         </LinearLayout>
 
-        <!-- Total Spent -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TOTAL SPENT"
-                android:textColor="@color/textPrimary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvTotalSpent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="₱150.00"
-                android:textColor="@color/expenseValue"
-                android:textSize="18sp" />
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:gravity="center">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/total_spent" android:textStyle="bold"/>
+            <EditText android:id="@+id/editTotalSpent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:hint="@string/hint_enter_amount" android:inputType="numberDecimal" android:textColor="@color/expenseValue"/>
         </LinearLayout>
     </LinearLayout>
 
-    <!-- ✅ Section Header -->
-    <TextView
-        android:id="@+id/tvBudgetedTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Budgeted Categories: Oct, 2025"
-        android:textStyle="bold"
-        android:textColor="@color/textPrimary"
-        android:padding="12dp"
-        android:textSize="15sp"
-        android:background="@color/sectionHeader" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/budgeted_categories" android:textStyle="bold" android:layout_marginTop="12dp"/>
 
-    <!-- ✅ Budgeted Category Card -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="12dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_card"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="10dp">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/ic_food"
-                app:tint="@color/expenseValue" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Food"
-                android:textColor="@color/textPrimary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+    <!-- example budgeted card -->
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_card" android:orientation="horizontal" android:padding="10dp" android:layout_marginTop="8dp">
+        <ImageView android:layout_width="36dp" android:layout_height="36dp" android:src="@drawable/ic_food" app:tint="@color/expenseValue"/>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:paddingStart="10dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Food" android:textStyle="bold"/>
+            <TextView android:id="@+id/tvBudgetLimit" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Limit: ₱150" android:textColor="@color/primaryBlue"/>
+            <TextView android:id="@+id/tvBudgetSpent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Spent: ₱100" android:textColor="@color/expenseValue"/>
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingStart="12dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Limit: ₱150"
-                android:textColor="@color/primaryBlue"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Spent: ₱100"
-                android:textColor="@color/expenseValue"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Remaining: ₱50"
-                android:textColor="@color/incomeValue"
-                android:textSize="15sp" />
-        </LinearLayout>
-
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_more_vert"
-            app:tint="@color/textPrimary" />
+        <ImageButton android:id="@+id/btnMore" android:layout_width="wrap_content" android:layout_height="wrap_content" android:src="@drawable/ic_more_vert" android:background="@android:color/transparent" app:tint="@color/textPrimary"/>
     </LinearLayout>
 
-    <!-- ✅ Not Budgeted Section -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="NOT Budgeted Categories"
-        android:textStyle="bold"
-        android:textColor="@color/textPrimary"
-        android:padding="12dp"
-        android:background="@color/sectionHeader"
-        android:layout_marginTop="12dp" />
+    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/not_budgeted" android:textStyle="bold" android:layout_marginTop="12dp"/>
 
-    <!-- ✅ ScrollView for Non-budgeted -->
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingHorizontal="8dp"
-        android:paddingTop="8dp">
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerCategories" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginTop="8dp"/>
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:divider="@color/sectionDivider"
-            android:showDividers="middle">
-
-            <include layout="@layout/item_not_budgeted_category" />
-            <include layout="@layout/item_not_budgeted_category" />
-            <include layout="@layout/item_not_budgeted_category" />
-        </LinearLayout>
-    </ScrollView>
-
-    <!-- ✅ Bottom Navigation -->
     <include layout="@layout/bottom_nav" />
 </LinearLayout>

@@ -1,9 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/primaryBlue</item>
-        <item name="colorPrimaryDark">@color/primaryBlue</item>
-        <item name="colorAccent">@color/primaryBlue</item>
-        <item name="android:windowBackground">@color/backgroundLight</item>
+        <item name="android:fontFamily">sans-serif</item>
     </style>
+
+    <style name="KeypadBtn" parent="Widget.MaterialComponents.Button">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">64dp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:layout_columnWeight">1</item>
+    </style>
+    <style name="TextAppearance.BudgetSectionTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">@color/textPrimary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
 </resources>

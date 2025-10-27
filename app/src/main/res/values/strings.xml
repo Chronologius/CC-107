@@ -1,3 +1,27 @@
 <resources>
-    <string name="app_name">Budget Tracker</string>
+    <string name="app_name">Budget Buddy</string>
+    <string name="total_budget">TOTAL BUDGET</string>
+    <string name="total_spent">TOTAL SPENT</string>
+    <string name="hint_enter_amount">Enter amount</string>
+    <string name="budgeted_categories">Budgeted Categories</string>
+    <string name="not_budgeted">Not Budgeted</string>
+    <string name="btn_set_budget">SET BUDGET</string>
+    <string name="set_budget">Set Budget</string>
+    <string name="limit">Limit</string>
+    <string name="hint_limit">Limit amount</string>
+    <string name="hint_spent">Spent amount</string>
+    <string name="hint_category">Category name</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="add_notes">Add Notes</string>
+    <string name="records">Records</string>
+    <string name="charts">Charts</string>
+    <string name="budget">Budget</string>
+    <string name="categories">Categories</string>
+    <string name="transaction_records">Transaction Records</string>
+    <string name="expense_analysis">Expense Analysis</string>
+    <string name="category_image">Category icon</string>
+    <string name="close">Close</string>
+
+
 </resources>

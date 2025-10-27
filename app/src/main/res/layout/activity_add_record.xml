@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp">
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+        <TextView android:id="@+id/tvCancel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/cancel" android:textStyle="bold"/>
+        <TextView android:id="@+id/tvSave" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/save" android:textStyle="bold" android:textColor="@color/primaryBlue"/>
+    </LinearLayout>
+
+    <EditText android:id="@+id/editNotes" android:layout_width="match_parent" android:layout_height="80dp" android:hint="@string/add_notes" android:layout_marginTop="10dp"/>
+
+    <TextView android:id="@+id/tvResult" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="0" android:textSize="28sp" android:gravity="end" android:layout_marginTop="8dp"/>
+
+    <GridLayout android:id="@+id/keypad" android:layout_width="match_parent" android:layout_height="wrap_content" android:columnCount="4" android:rowCount="5" android:layout_marginTop="12dp">
+        <!-- Row 1 -->
+        <Button style="@style/KeypadBtn" android:id="@+id/key_AC" android:text="AC"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_DEL" android:text="⌫"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_div" android:text="/"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_mul" android:text="*"/>
+        <!-- Row 2 -->
+        <Button style="@style/KeypadBtn" android:id="@+id/key_7" android:text="7"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_8" android:text="8"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_9" android:text="9"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_minus" android:text="-"/>
+        <!-- Row 3 -->
+        <Button style="@style/KeypadBtn" android:id="@+id/key_4" android:text="4"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_5" android:text="5"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_6" android:text="6"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_plus" android:text="+"/>
+        <!-- Row 4 -->
+        <Button style="@style/KeypadBtn" android:id="@+id/key_1" android:text="1"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_2" android:text="2"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_3" android:text="3"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_equal" android:text="="/>
+        <!-- Row 5 -->
+        <Button style="@style/KeypadBtn" android:id="@+id/key_00" android:text="00"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_0" android:text="0"/>
+        <Button style="@style/KeypadBtn" android:id="@+id/key_dot" android:text="."/>
+        <View android:layout_width="0dp" android:layout_height="0dp"/>
+    </GridLayout>
+</LinearLayout>
