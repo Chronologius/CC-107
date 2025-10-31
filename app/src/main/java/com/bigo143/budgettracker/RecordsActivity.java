@@ -1,6 +1,8 @@
 package com.bigo143.budgettracker;
 
 import android.os.Bundle;
+import android.view.View;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,5 +21,9 @@ public class RecordsActivity extends AppCompatActivity {
         data.add(new RecordItem("Salary","Oct 20, 2025",5000.0));
         RecordAdapter adapter = new RecordAdapter(data);
         r.setAdapter(adapter);
+
+        // ✅ Initialize bottom nav
+        View bottomBar = findViewById(R.id.bottomBar);
+        Bottom_nav.setupBottomNav(this, bottomBar);
     }
 }

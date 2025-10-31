@@ -11,7 +11,7 @@
 
         <!-- Launcher Activity -->
         <activity
-            android:name=".BudgetActivity"
+            android:name=".WelcomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,6 +23,11 @@
         <activity android:name=".AddRecordActivity" android:exported="false" />
         <activity android:name=".ChartsActivity" android:exported="false" />
         <activity android:name=".RecordsActivity" android:exported="false" />
+        <activity android:name=".LoginActivity" android:exported="false" />
+        <activity android:name=".SignupActivity" android:exported="false" />
+        <activity android:name=".BudgetActivity" android:exported="false" />
+
+
 
     </application>
 

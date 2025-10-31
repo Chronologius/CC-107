@@ -6,5 +6,8 @@
     <color name="appBarBackground">#FFFFFF</color>
     <color name="navBackground">#F5F5F5</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>           <!-- Text -->
+         <!-- Dark text -->
+    <color name="grayLight">#E0E0E0</color>
 
 </resources>
