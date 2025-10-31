@@ -10,4 +10,10 @@
          <!-- Dark text -->
     <color name="grayLight">#E0E0E0</color>
 
+
+    <color name="first">#fcefcb</color>
+    <color name="second">#1565C0</color>
+    <color name="third">#C7A17A</color>
+    <color name="fourth">#5C4033</color>
+    <color name="fifth">#3E2C23</color>
 </resources>

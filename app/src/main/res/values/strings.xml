@@ -22,6 +22,9 @@
     <string name="expense_analysis">Expense Analysis</string>
     <string name="category_image">Category icon</string>
     <string name="close">Close</string>
+    <string name="open_nav">Open Navigation Drawer</string>
+    <string name="close_nav">Close Navigation Drawer</string>
+    <string name="placeholder">Placeholder</string>
 
 
 </resources>
