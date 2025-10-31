@@ -13,6 +13,7 @@ public class BudgetFragment extends Fragment {
 
     public BudgetFragment() {
         // Required empty public constructor
+        //lagay nyo dito mga ibang java, tas burahin yung nasa labas
     }
 
     @Override
