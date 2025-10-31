@@ -25,7 +25,7 @@ public class BudgetActivity extends AppCompatActivity {
         adapter.addItem(new NotBudgetedAdapter.CategoryRow("Groceries", 0.0, R.drawable.ic_food));
         adapter.addItem(new NotBudgetedAdapter.CategoryRow("Clothing", 0.0, R.drawable.ic_categories));
         recycler.setAdapter(adapter);
-
+        //aa
         ImageButton add = findViewById(R.id.btnAdd);
         if (add != null) {
             add.setOnClickListener(v -> {
