@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bigo143.budgettracker.DatabaseHelper;
+import com.bigo143.budgettracker.MainActivity;
 import com.bigo143.budgettracker.MgaMatatanggalNaFiles.BudgetActivity;
 import com.bigo143.budgettracker.R;
 
@@ -40,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
             boolean valid = dbHelper.loginUser(username, password);
             if (valid) {
                 Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, BudgetActivity.class));
+                startActivity(new Intent(this, MainActivity.class));
                 finish(); // close login so user can’t go back
             } else {
                 Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show();
