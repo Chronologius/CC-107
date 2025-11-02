@@ -1,0 +1,25 @@
+package com.bigo143.budgettracker.fragments;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
+
+import com.bigo143.budgettracker.R;
+
+public class BudgetFragment extends Fragment {
+
+    public BudgetFragment() {
+        // Required empty public constructor
+        //lagay nyo dito mga ibang java, tas burahin yung nasa labas
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_budget, container, false);
+    }
+}
