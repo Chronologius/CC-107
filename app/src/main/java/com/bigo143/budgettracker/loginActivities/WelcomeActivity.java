@@ -1,10 +1,11 @@
-package com.bigo143.budgettracker;
+package com.bigo143.budgettracker.loginActivities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.bigo143.budgettracker.R;
 
 public class WelcomeActivity extends AppCompatActivity {
 

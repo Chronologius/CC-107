@@ -25,8 +25,8 @@
                 android:layout_height="70dp"
                 android:background="@color/second"
                 android:elevation="4dp"
-                app:titleTextColor="@color/fourth"
-                app:navigationIconTint="@color/fourth"
+                app:titleTextColor="@color/white"
+                app:navigationIconTint="@color/white"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
                 android:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
@@ -55,8 +55,8 @@
             app:tint="@color/second"
             app:maxImageSize="36dp"
             android:src="@drawable/nav_bar_new_icon"
-            app:itemIconTint="@color/fourth"
-            app:itemTextColor="@color/fourth"/>
+            app:itemIconTint="@color/white"
+            app:itemTextColor="@color/white"/>
 
         <!-- Custom Bottom Navigation bar with rounded top and "cutout" margin -->
         <FrameLayout
@@ -73,7 +73,7 @@
                 android:background="@android:color/transparent"
                 app:menu="@menu/bottom_navigation_menu"
                 app:itemTextAppearanceInactive="@style/BottomNavTextStyle"
-                app:itemIconSize="28dp"
+                app:itemIconSize="20dp"
                 app:labelVisibilityMode="labeled" />
         </FrameLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
@@ -86,6 +86,6 @@
         android:layout_gravity="start"
         app:menu="@menu/navigation_drawer_menu"
         app:headerLayout="@layout/nav_header"
-        app:itemIconTint="@color/fourth"
-        app:itemTextColor="@color/fourth" />
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white" />
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -1,4 +1,4 @@
-package com.bigo143.budgettracker;
+package com.bigo143.budgettracker.MgaMatatanggalNaFiles;
 
 import android.os.Bundle;
 import android.view.View;
@@ -6,6 +6,10 @@ import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bigo143.budgettracker.AddRecordActivity;
+import com.bigo143.budgettracker.NotBudgetedAdapter;
+import com.bigo143.budgettracker.R;
 
 public class BudgetActivity extends AppCompatActivity {
 
@@ -15,9 +19,9 @@ public class BudgetActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_budget);
+        setContentView(R.layout.fragment_categories);
 
-        recycler = findViewById(R.id.recyclerCategories);
+        //recycler = findViewById(R.id.recyclerCategories);
         recycler.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new NotBudgetedAdapter(this);
@@ -26,19 +30,21 @@ public class BudgetActivity extends AppCompatActivity {
         adapter.addItem(new NotBudgetedAdapter.CategoryRow("Clothing", 0.0, R.drawable.ic_categories));
         recycler.setAdapter(adapter);
         //aa
-        ImageButton add = findViewById(R.id.btnAdd);
-        if (add != null) {
-            add.setOnClickListener(v -> {
-                startActivity(new android.content.Intent(this, AddRecordActivity.class));
-            });
-        }
 
-        // ✅ Initialize bottom navigation bar
-        View bottomBar = findViewById(R.id.bottomBar);
-        if (bottomBar == null) {
-            android.widget.Toast.makeText(this, "bottomBar is null!", android.widget.Toast.LENGTH_SHORT).show();
-        } else {
-            Bottom_nav.setupBottomNav(this, bottomBar);
-        }
+        //juskopo bat ganto to
+//        ImageButton add = findViewById(R.id.btnAdd);
+//        if (add != null) {
+//            add.setOnClickListener(v -> {
+//                startActivity(new android.content.Intent(this, AddRecordActivity.class));
+//            });
+//        }
+//
+//        // ✅ Initialize bottom navigation bar
+//        View bottomBar = findViewById(R.id.bottomBar);
+//        if (bottomBar == null) {
+//            android.widget.Toast.makeText(this, "bottomBar is null!", android.widget.Toast.LENGTH_SHORT).show();
+//        } else {
+//            Bottom_nav.setupBottomNav(this, bottomBar);
+//        }
     }
 }

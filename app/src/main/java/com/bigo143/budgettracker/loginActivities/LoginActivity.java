@@ -1,4 +1,4 @@
-package com.bigo143.budgettracker;
+package com.bigo143.budgettracker.loginActivities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.bigo143.budgettracker.DatabaseHelper;
+import com.bigo143.budgettracker.MgaMatatanggalNaFiles.BudgetActivity;
+import com.bigo143.budgettracker.R;
 
 public class LoginActivity extends AppCompatActivity {
 

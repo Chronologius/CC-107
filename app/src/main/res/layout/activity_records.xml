@@ -10,7 +10,6 @@
         android:id="@+id/contentLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottomBar"
         android:orientation="vertical">
 
         <TextView
@@ -27,11 +26,4 @@
             android:layout_height="match_parent"
             android:layout_marginTop="8dp" />
     </LinearLayout>
-
-    <!-- ✅ Include your bottom nav here -->
-    <include
-        android:id="@+id/bottomBar"
-        layout="@layout/bottom_nav"
-         />
-
 </RelativeLayout>

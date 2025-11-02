@@ -11,7 +11,7 @@
 
         <!-- Launcher Activity -->
         <activity
-            android:name=".WelcomeActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,11 +21,11 @@
 
         <!-- Other Activities -->
         <activity android:name=".AddRecordActivity" android:exported="false" />
-        <activity android:name=".ChartsActivity" android:exported="false" />
+        <activity android:name=".MgaMatatanggalNaFiles.ChartsActivity" android:exported="false" />
         <activity android:name=".RecordsActivity" android:exported="false" />
-        <activity android:name=".LoginActivity" android:exported="false" />
-        <activity android:name=".SignupActivity" android:exported="false" />
-        <activity android:name=".BudgetActivity" android:exported="false" />
+        <activity android:name=".loginActivities.LoginActivity" android:exported="false" />
+        <activity android:name=".loginActivities.SignupActivity" android:exported="false" />
+        <activity android:name=".MgaMatatanggalNaFiles.BudgetActivity" android:exported="false" />
 
 
 

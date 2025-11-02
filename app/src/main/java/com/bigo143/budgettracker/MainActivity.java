@@ -1,6 +1,7 @@
 package com.bigo143.budgettracker;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -113,13 +114,14 @@ public class MainActivity extends AppCompatActivity {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.bottomsheetlayout);
 
-        LinearLayout videoLayout = dialog.findViewById(R.id.layoutVideo);
+        LinearLayout videoLayout = dialog.findViewById(R.id.addRecord);
         LinearLayout shortsLayout = dialog.findViewById(R.id.layoutShorts);
         LinearLayout liveLayout = dialog.findViewById(R.id.layoutLive);
 
         videoLayout.setOnClickListener(v -> {
             dialog.dismiss();
-            Toast.makeText(MainActivity.this, "Upload a Video is clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Add record was clicked", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(MainActivity.this, AddRecordActivity.class));
         });
 
         shortsLayout.setOnClickListener(v -> {
