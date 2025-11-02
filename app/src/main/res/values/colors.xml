@@ -1,5 +1,19 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="primaryBlue">#1565C0</color>
+    <color name="expenseValue">#D32F2F</color>
+    <color name="incomeValue">#2E7D32</color>
+    <color name="textPrimary">#212121</color>
+    <color name="appBarBackground">#FFFFFF</color>
+    <color name="navBackground">#F5F5F5</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>           <!-- Text -->
+         <!-- Dark text -->
+    <color name="grayLight">#E0E0E0</color>
+
+
+    <color name="first">#fcefcb</color>
+    <color name="second">#1565C0</color>
+    <color name="third">#C7A17A</color>
+    <color name="fourth">#5C4033</color>
+    <color name="fifth">#3E2C23</color>
 </resources>
