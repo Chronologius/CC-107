@@ -1,19 +1,24 @@
 <resources>
-    <color name="primaryBlue">#1565C0</color>
+    <color name="colorPrimary">#D2691E</color> <!-- Warm Orange -->
     <color name="expenseValue">#D32F2F</color>
     <color name="incomeValue">#2E7D32</color>
     <color name="textPrimary">#212121</color>
     <color name="appBarBackground">#FFFFFF</color>
     <color name="navBackground">#F5F5F5</color>
     <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>           <!-- Text -->
-         <!-- Dark text -->
+    <color name="black">#000000</color>
     <color name="grayLight">#E0E0E0</color>
 
+    <!-- New Warm Palette -->
+    <color name="first">#F5DEB3</color> <!-- Wheat -->
+    <color name="second">#D2691E</color> <!-- Chocolate -->
+    <color name="third">#8B4513</color> <!-- SaddleBrown -->
+    <color name="fourth">#A0522D</color> <!-- Sienna -->
+    <color name="fifth">#BC8F8F</color> <!-- RosyBrown -->
+    <color name="primaryBlue">#3F51B5</color>
 
-    <color name="first">#fcefcb</color>
-    <color name="second">#1565C0</color>
-    <color name="third">#C7A17A</color>
-    <color name="fourth">#5C4033</color>
-    <color name="fifth">#3E2C23</color>
+    <!-- Colors for calcu_add_expenseincome.xml -->
+    <color name="text_main">#5D4037</color> <!-- Dark Brown -->
+    <color name="calcu_stroke">#A1887F</color> <!-- Light Brown -->
+    <color name="calcu_background">#F5F5F5</color>
 </resources>
