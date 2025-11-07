@@ -13,7 +13,7 @@
     <string name="transaction_separator">|</string>
 
     <!-- Hints -->
-    <string name="account_hint">Account</string>
+    <string name="account_hint">From Account</string>
     <string name="category_hint">Category</string>
     <string name="to_account_hint">To Account</string>
 
@@ -21,8 +21,13 @@
     <string name="calculator_ac">AC</string>
     <string name="calculator_back">Back</string>
 
-    <!-- Errors -->
-    <string name="error_same_account">Cannot transfer to the same account. Please select a different account.</string>
+    <!-- Errors and Success -->
+    <string name="error_same_account">Cannot transfer to the same account.</string>
+    <string name="error_select_account">Please select an account.</string>
+    <string name="error_select_to_account">Please select a destination account.</string>
+    <string name="error_select_category">Please select a category.</string>
+    <string name="error_zero_amount">Amount cannot be zero.</string>
+    <string name="success_transaction_saved">Transaction saved successfully.</string>
 
     <!-- For other activities -->
     <string name="total_budget">TOTAL BUDGET</string>

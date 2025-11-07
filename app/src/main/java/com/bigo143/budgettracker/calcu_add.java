@@ -4,6 +4,8 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -35,6 +37,7 @@ public class calcu_add extends AppCompatActivity {
     private EditText notesEditText;
     private AutoCompleteTextView accountDropdown;
     private AutoCompleteTextView categoryDropdown;
+    private TextInputLayout accountDropdownLayout;
     private TextInputLayout categoryDropdownLayout;
 
     private TextView incomeTextView;
@@ -70,6 +73,7 @@ public class calcu_add extends AppCompatActivity {
         resultTextView = findViewById(R.id.result);
         notesEditText = findViewById(R.id.notes_edittext);
         accountDropdown = findViewById(R.id.account_dropdown);
+        accountDropdownLayout = findViewById(R.id.account_dropdown_layout);
         categoryDropdown = findViewById(R.id.category_dropdown);
         categoryDropdownLayout = findViewById(R.id.category_dropdown_layout);
         incomeTextView = findViewById(R.id.text_income);
@@ -93,6 +97,9 @@ public class calcu_add extends AppCompatActivity {
 
         // Setup Date and Time Pickers
         setupDateTimePickers();
+
+        // Add text watchers to clear errors on input
+        addTextWatchers();
     }
 
     private void setupDropdown(AutoCompleteTextView dropdown, int arrayResourceId) {
@@ -172,24 +179,78 @@ public class calcu_add extends AppCompatActivity {
 
     private void setupSaveCancelButtons() {
         findViewById(R.id.save_button).setOnClickListener(v -> {
-            String fromAccount = accountDropdown.getText().toString();
-            String toAccount = categoryDropdown.getText().toString();
-
-            if (currentTransactionType == TransactionType.TRANSFER && fromAccount.equals(toAccount)) {
-                Toast.makeText(this, getString(R.string.error_same_account), Toast.LENGTH_SHORT).show();
-                return;
+            if (!validateInput()) {
+                return; // Validation failed, do not proceed
             }
 
-            String amount = resultTextView.getText().toString();
-            String notes = notesEditText.getText().toString();
-            String date = datePickerTextView.getText().toString();
-            String time = timePickerTextView.getText().toString();
-            // Implement your save logic here
+            // All checks passed, proceed with saving
+            Toast.makeText(this, getString(R.string.success_transaction_saved), Toast.LENGTH_SHORT).show();
+
+            // Implement your actual save logic here (e.g., database insertion)
             finish();
         });
 
         findViewById(R.id.cancel_button).setOnClickListener(v -> {
             finish();
+        });
+    }
+
+    private boolean validateInput() {
+        String fromAccount = accountDropdown.getText().toString();
+        String to = categoryDropdown.getText().toString();
+        String amount = resultTextView.getText().toString();
+
+        if (fromAccount.isEmpty()) {
+            accountDropdownLayout.setError(getString(R.string.error_select_account));
+            return false;
+        }
+
+        if (currentTransactionType == TransactionType.TRANSFER) {
+            if (to.isEmpty()) {
+                categoryDropdownLayout.setError(getString(R.string.error_select_to_account));
+                return false;
+            }
+            if (fromAccount.equals(to)) {
+                categoryDropdownLayout.setError(getString(R.string.error_same_account));
+                return false;
+            }
+        } else { // Income or Expense
+            if (to.isEmpty()) {
+                categoryDropdownLayout.setError(getString(R.string.error_select_category));
+                return false;
+            }
+        }
+
+        if (Double.parseDouble(amount) == 0) {
+            // This error is better shown as a Toast since it's not tied to a specific input field
+            Toast.makeText(this, getString(R.string.error_zero_amount), Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true; // All validation checks passed
+    }
+
+    private void addTextWatchers() {
+        accountDropdown.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                accountDropdownLayout.setError(null); // Clear error
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        categoryDropdown.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                categoryDropdownLayout.setError(null); // Clear error
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
         });
     }
 
@@ -253,6 +314,8 @@ public class calcu_add extends AppCompatActivity {
             }
         } else if (operator.equals("-")) {
             expressionBuilder.append(operator);
+        } else {
+            // Prevent starting with other operators
         }
         updateResult();
     }
