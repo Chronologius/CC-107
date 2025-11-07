@@ -322,7 +322,7 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:text="@string/calculator_back"
-                    android:textSize="18sp"
+                    android:textSize="0sp"
                     android:textColor="@color/text_main"
                     android:background="@drawable/edittext_with_stroke"
                     android:layout_margin="2dp"
