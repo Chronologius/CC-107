@@ -21,7 +21,7 @@
 
         <!-- Other Activities -->
         <activity android:name=".MainActivity" android:exported="true" />
-        <activity android:name=".AddRecordActivity" android:exported="false" />
+        <activity android:name=".calcu_add" android:exported="false" />
         <activity android:name=".MgaMatatanggalNaFiles.ChartsActivity" android:exported="false" />
         <activity android:name=".RecordsActivity" android:exported="false" />
         <activity android:name=".loginActivities.LoginActivity" android:exported="false" />

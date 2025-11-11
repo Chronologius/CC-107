@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         videoLayout.setOnClickListener(v -> {
             dialog.dismiss();
             Toast.makeText(MainActivity.this, "Add record was clicked", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(MainActivity.this, AddRecordActivity.class));
+            startActivity(new Intent(MainActivity.this, calcu_add.class));
         });
 
         shortsLayout.setOnClickListener(v -> {
