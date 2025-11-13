@@ -19,11 +19,13 @@ public class WelcomeActivity extends AppCompatActivity {
 
         btnCreateAccount.setOnClickListener(v -> {
             Intent i = new Intent(WelcomeActivity.this, SignupActivity.class);
+            finish();
             startActivity(i);
         });
 
         btnLogin.setOnClickListener(v -> {
             Intent i = new Intent(WelcomeActivity.this, LoginActivity.class);
+            finish();
             startActivity(i);
         });
     }
