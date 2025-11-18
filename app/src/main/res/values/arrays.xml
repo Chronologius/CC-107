@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="account_choices">
+        <item>Wallet</item>
+        <item>e-Wallet</item>
         <item>Cash</item>
+        <item>Bank</item>
         <item>Bank Account</item>
         <item>Credit Card</item>
     </string-array>
@@ -11,5 +14,6 @@
         <item>Salary</item>
         <item>Bills</item>
         <item>Entertainment</item>
+        <item>Utilities</item>
     </string-array>
 </resources>

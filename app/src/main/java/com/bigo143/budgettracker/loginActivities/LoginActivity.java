@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bigo143.budgettracker.DatabaseHelper;
 import com.bigo143.budgettracker.MainActivity;
-import com.bigo143.budgettracker.MgaMatatanggalNaFiles.BudgetActivity;
+//import com.bigo143.budgettracker.MgaMatatanggalNaFiles.BudgetActivity;
 import com.bigo143.budgettracker.R;
 
 public class LoginActivity extends AppCompatActivity {

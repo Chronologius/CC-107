@@ -52,5 +52,17 @@
     <string name="open_nav">Open Navigation Drawer</string>
     <string name="close_nav">Close Navigation Drawer</string>
     <string name="placeholder">Placeholder</string>
+    <string name="add_record">Add Record</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="logout">Logout</string>
 
+    <!-- Login Activity -->
+    <string name="app_title_budget_buddy">Budget Buddy</string>
+    <string name="login_title">Log In</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Log In</string>
+    <string name="or_divider">  OR  </string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="signup_redirect">Don\'t have an account? Sign Up</string>
 </resources>
