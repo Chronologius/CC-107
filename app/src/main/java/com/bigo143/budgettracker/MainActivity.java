@@ -1,6 +1,7 @@
 package com.bigo143.budgettracker;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -19,8 +20,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.bigo143.budgettracker.fragments.BudgetFragment;
-import com.bigo143.budgettracker.fragments.CategoriesFragment;
+//import com.bigo143.budgettracker.fragments.BudgetFragment;
+//import com.bigo143.budgettracker.fragments.CategoriesFragment;
 import com.bigo143.budgettracker.fragments.ChartsFragment;
 import com.bigo143.budgettracker.fragments.RecordsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -90,10 +91,10 @@ public class MainActivity extends AppCompatActivity {
             return new RecordsFragment();
         } else if (itemId == R.id.charts) {
             return new ChartsFragment();
-        } else if (itemId == R.id.budget) {
-            return new BudgetFragment();
-        } else if (itemId == R.id.categories) {
-            return new CategoriesFragment();
+//        } else if (itemId == R.id.budget) {
+//            return new BudgetFragment();
+//        } else if (itemId == R.id.categories) {
+//            return new CategoriesFragment();
         } else {
             return null;
         }
@@ -113,23 +114,24 @@ public class MainActivity extends AppCompatActivity {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.bottomsheetlayout);
 
-        LinearLayout videoLayout = dialog.findViewById(R.id.layoutVideo);
+        LinearLayout videoLayout = dialog.findViewById(R.id.addRecord);
         LinearLayout shortsLayout = dialog.findViewById(R.id.layoutShorts);
         LinearLayout liveLayout = dialog.findViewById(R.id.layoutLive);
 
         videoLayout.setOnClickListener(v -> {
             dialog.dismiss();
-            Toast.makeText(MainActivity.this, "Upload a Video is clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Setting Values", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(MainActivity.this, calcu_add.class));
         });
 
         shortsLayout.setOnClickListener(v -> {
             dialog.dismiss();
-            Toast.makeText(MainActivity.this, "Create a Short is clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Editting Budget", Toast.LENGTH_SHORT).show();
         });
 
         liveLayout.setOnClickListener(v -> {
             dialog.dismiss();
-            Toast.makeText(MainActivity.this, "Go Live is clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Adding Record", Toast.LENGTH_SHORT).show();
         });
 
 //        cancelButton.setOnClickListener(view -> dialog.dismiss()); //Ill return this if i need X in fab
@@ -138,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
         if (dialog.getWindow() != null) {
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+//            dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
             dialog.getWindow().setGravity(Gravity.BOTTOM);
         }
     }

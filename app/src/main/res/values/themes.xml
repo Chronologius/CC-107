@@ -1,17 +1,33 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.BudgetTracker" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <style name="Theme.BudgetBuddy.Theme" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Dynamic color usage is automatic when launched on Android 12+ if you call MaterialComponents dynamic color APIs.
+             The static fallbacks are provided in colors.xml -->
+        <item name="android:windowBackground">@color/surface</item>
+        <item name="materialButtonStyle">@style/Widget.BB.MaterialButton</item>
     </style>
 
-    <style name="Theme.BudgetTracker" parent="Base.Theme.BudgetTracker" />
+    <style name="Theme.BudgetTracker" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primaryBlue</item>
+        <item name="colorPrimaryVariant">@color/primaryDark</item>
+        <item name="colorSecondary">@color/tealAccent</item>
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
+        <item name="android:navigationBarColor">@color/backgroundLight</item>
+        <item name="android:windowBackground">@color/backgroundLight</item>
+        <item name="android:textColorPrimary">@color/textPrimary</item>
+        <item name="android:textColorSecondary">@color/textSecondary</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 
-    <style name="BottomNavTextStyle" parent="TextAppearance.AppCompat.Caption">
-        <item name="android:textSize">14sp</item> <!-- Increase label size -->
+    <style name="Theme.BudgetTracker.Dark" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primaryBlue</item>
+        <item name="colorSecondary">@color/tealAccent</item>
+        <item name="android:statusBarColor">@color/backgroundDark</item>
+        <item name="android:navigationBarColor">@color/backgroundDark</item>
+        <item name="android:windowBackground">@color/backgroundDark</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/tealAccent</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
-    <style name="DialogAnimation">
-        <item name="android:windowEnterAnimation">@anim/slide_in</item>
-        <item name="android:windowExitAnimation">@anim/slide_out</item>
-    </style>
+
 </resources>

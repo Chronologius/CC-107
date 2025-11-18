@@ -1,4 +1,11 @@
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="@color/second"/>
-    <corners android:topLeftRadius="24dp" android:topRightRadius="24dp"/>
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/navBackground"/>
+    <corners android:topLeftRadius="17dp" android:topRightRadius="17dp"/>
+    <stroke android:width="0.5dp" android:color="#22000000"/>
 </shape>
+    <!--<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">-->
+    <!--    <solid android:color="@color/second"/>-->
+    <!--    <corners android:topLeftRadius="24dp" android:topRightRadius="24dp"/>-->
+    <!--</shape>-->

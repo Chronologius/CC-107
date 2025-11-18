@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Night colors -->
+    <color name="primary">#0288D1</color>
+    <color name="primaryVariant">#0277BD</color>
+    <color name="secondary">#26C6DA</color>
+    <color name="onPrimary">#121212</color>
+
+    <color name="surface">#121212</color>
+    <color name="onSurface">#E0E0E0</color>
+
+    <color name="incomeValue">#81C784</color>
+    <color name="expenseValue">#EF9A9A</color>
+    <color name="navBackground">#121212</color>
+    <color name="cardBackground">#1E1E1E</color>
+
+    <color name="textPrimary">#EAEFF1</color>
+    <color name="textSecondary">#90A4AE</color>
+    <color name="first">#EAEFF1</color>
+    <color name="fourth">#EAEFF1</color>
+    <color name="fifth">#004D40</color>
+
+    <color name="calcu_stroke">#37474F</color>
+    <color name="transparent">#00000000</color>
+</resources>
