@@ -10,6 +10,8 @@
     <color name="black">#000000</color>
     <color name="grayLight">#E0E0E0</color>
     <color name="cardBackground">#1E1E1E</color>
+    <color name="text1Secondary">#757575</color>
+
 
     <!-- New Warm Palette -->
     <color name="first">#F5DEB3</color> <!-- Wheat -->
