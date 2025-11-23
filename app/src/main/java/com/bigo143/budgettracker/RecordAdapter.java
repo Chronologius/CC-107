@@ -4,12 +4,12 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bigo143.budgettracker.R;
 import com.bigo143.budgettracker.models.Record;
 
 import java.util.List;
@@ -94,7 +94,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         item.tvAmount.setText(amountText);
 
         // icon name stored as "ic_food", "ic_salary" etc.
-        item.iconCategory.setText(r.getIconName());
+        item.iconCategory.setImageResource(r.getIconName());
     }
 
     // ------------------------------
@@ -114,7 +114,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     // ------------------------------
     static class ItemHolder extends RecyclerView.ViewHolder {
 
-        TextView iconCategory;
+        ImageView iconCategory;
         TextView tvCategory, tvAccount, tvAmount;
 
         public ItemHolder(@NonNull View itemView) {

@@ -20,7 +20,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-// --- FIX 1: Add the import statement ---
+import com.bigo143.budgettracker.fragments.BudgetFragment;
+import com.bigo143.budgettracker.fragments.CategoriesFragment;
 import com.bigo143.budgettracker.fragments.ChartsFragment;
 import com.bigo143.budgettracker.fragments.RecordsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -92,10 +93,9 @@ public class MainActivity extends AppCompatActivity {
             return new ChartsFragment();
         } else if (itemId == R.id.budget) {
             return new BudgetFragment();
+        } else if (itemId == R.id.categories) {
+            return new CategoriesFragment();
         }
-//        } else if (itemId == R.id.categories) {
-//            return new CategoriesFragment();
-//        }
         else {
             return null;
         }
