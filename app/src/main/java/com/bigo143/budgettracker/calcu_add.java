@@ -50,17 +50,20 @@ public class calcu_add extends AppCompatActivity {
     private StringBuilder expressionBuilder = new StringBuilder();
     private Calendar calendar = Calendar.getInstance();
 
-    private enum TransactionType {
-        INCOME, TRANSFER, EXPENSE
-    }
-
+    private enum TransactionType { INCOME, TRANSFER, EXPENSE }
     private TransactionType currentTransactionType = TransactionType.EXPENSE; // Default
+
+    private DatabaseHelper dbHelper;
+    private String loggedInUser = "testUser"; // TODO: Replace with actual logged-in user
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.calcu_add_expenseincome);
+
+        // --- Initialize Database ---
+        dbHelper = new DatabaseHelper(this);
 
         ConstraintLayout mainLayout = findViewById(R.id.main_layout);
         ViewCompat.setOnApplyWindowInsetsListener(mainLayout, (v, insets) -> {
@@ -69,7 +72,7 @@ public class calcu_add extends AppCompatActivity {
             return insets;
         });
 
-        // Initialize views
+        // --- Initialize views ---
         resultTextView = findViewById(R.id.result);
         notesEditText = findViewById(R.id.notes_edittext);
         accountDropdown = findViewById(R.id.account_dropdown);
@@ -82,23 +85,23 @@ public class calcu_add extends AppCompatActivity {
         datePickerTextView = findViewById(R.id.date_picker_text);
         timePickerTextView = findViewById(R.id.time_picker_text);
 
-        // Setup dropdowns
+        // --- Setup dropdowns ---
         setupDropdown(accountDropdown, R.array.account_choices);
         setupDropdown(categoryDropdown, R.array.category_choices);
 
-        // Setup transaction type selection
+        // --- Setup transaction type ---
         setupTransactionTypeSelection();
 
-        // Setup calculator buttons
+        // --- Setup calculator buttons ---
         setupCalculatorButtons();
 
-        // Setup Save and Cancel buttons
+        // --- Save & Cancel buttons ---
         setupSaveCancelButtons();
 
-        // Setup Date and Time Pickers
+        // --- Date & Time pickers ---
         setupDateTimePickers();
 
-        // Add text watchers to clear errors on input
+        // --- Clear error on input ---
         addTextWatchers();
     }
 
@@ -109,7 +112,7 @@ public class calcu_add extends AppCompatActivity {
     }
 
     private void setupTransactionTypeSelection() {
-        updateTransactionTypeUI(); // Set initial state
+        updateTransactionTypeUI();
 
         incomeTextView.setOnClickListener(v -> {
             currentTransactionType = TransactionType.INCOME;
@@ -153,46 +156,54 @@ public class calcu_add extends AppCompatActivity {
         }
     }
 
-
     private void setupCalculatorButtons() {
-        // Number buttons
-        int[] numberButtonIds = {R.id.button_0, R.id.button_1, R.id.button_2, R.id.button_3, R.id.button_4, R.id.button_5, R.id.button_6, R.id.button_7, R.id.button_8, R.id.button_9, R.id.button_00, R.id.button_dot};
-        for (int id : numberButtonIds) {
-            findViewById(id).setOnClickListener(this::onNumberClick);
-        }
+        int[] numberButtonIds = {R.id.button_0, R.id.button_1, R.id.button_2, R.id.button_3,
+                R.id.button_4, R.id.button_5, R.id.button_6, R.id.button_7, R.id.button_8,
+                R.id.button_9, R.id.button_00, R.id.button_dot};
+        for (int id : numberButtonIds) findViewById(id).setOnClickListener(this::onNumberClick);
 
-        // Operator buttons
         int[] operatorButtonIds = {R.id.button_add, R.id.button_subtract, R.id.button_multiply, R.id.button_divide};
-        for (int id : operatorButtonIds) {
-            findViewById(id).setOnClickListener(this::onOperatorClick);
-        }
+        for (int id : operatorButtonIds) findViewById(id).setOnClickListener(this::onOperatorClick);
 
-        // Equals button
         findViewById(R.id.button_equal).setOnClickListener(this::onEqualsClick);
-
-        // Clear button
         findViewById(R.id.clear_button).setOnClickListener(this::onClearClick);
-
-        // Back button
         findViewById(R.id.back_button).setOnClickListener(this::onBackClick);
     }
 
     private void setupSaveCancelButtons() {
         findViewById(R.id.save_button).setOnClickListener(v -> {
-            if (!validateInput()) {
-                return; // Validation failed, do not proceed
+            if (!validateInput()) return;
+
+            double amount = Double.parseDouble(resultTextView.getText().toString());
+            String fromAccount = accountDropdown.getText().toString();
+            String category = categoryDropdown.getText().toString();
+            String note = notesEditText.getText().toString();
+            String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(calendar.getTime());
+
+            boolean success = false;
+
+            // Insert into database
+            switch (currentTransactionType) {
+                case INCOME:
+                    success = dbHelper.insertRecord(loggedInUser, Integer.parseInt(category), "income", amount, date, note);
+                    break;
+                case EXPENSE:
+                    success = dbHelper.insertRecord(loggedInUser, Integer.parseInt(category), "expense", amount, date, note);
+                    break;
+                case TRANSFER:
+                    success = dbHelper.insertRecord(loggedInUser, Integer.parseInt(category), "transfer", amount, date, note);
+                    break;
             }
 
-            // All checks passed, proceed with saving
-            Toast.makeText(this, getString(R.string.success_transaction_saved), Toast.LENGTH_SHORT).show();
-
-            // Implement your actual save logic here (e.g., database insertion)
-            finish();
+            if (success) {
+                Toast.makeText(this, "Transaction saved", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(this, "Error saving transaction", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        findViewById(R.id.cancel_button).setOnClickListener(v -> {
-            finish();
-        });
+        findViewById(R.id.cancel_button).setOnClickListener(v -> finish());
     }
 
     private boolean validateInput() {
@@ -214,7 +225,7 @@ public class calcu_add extends AppCompatActivity {
                 categoryDropdownLayout.setError(getString(R.string.error_same_account));
                 return false;
             }
-        } else { // Income or Expense
+        } else {
             if (to.isEmpty()) {
                 categoryDropdownLayout.setError(getString(R.string.error_select_category));
                 return false;
@@ -222,34 +233,23 @@ public class calcu_add extends AppCompatActivity {
         }
 
         if (Double.parseDouble(amount) == 0) {
-            // This error is better shown as a Toast since it's not tied to a specific input field
             Toast.makeText(this, getString(R.string.error_zero_amount), Toast.LENGTH_SHORT).show();
             return false;
         }
 
-        return true; // All validation checks passed
+        return true;
     }
 
     private void addTextWatchers() {
         accountDropdown.addTextChangedListener(new TextWatcher() {
-            @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                accountDropdownLayout.setError(null); // Clear error
-            }
-            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { accountDropdownLayout.setError(null); }
             public void afterTextChanged(Editable s) {}
         });
 
         categoryDropdown.addTextChangedListener(new TextWatcher() {
-            @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                categoryDropdownLayout.setError(null); // Clear error
-            }
-            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { categoryDropdownLayout.setError(null); }
             public void afterTextChanged(Editable s) {}
         });
     }
@@ -258,32 +258,25 @@ public class calcu_add extends AppCompatActivity {
         updateDateTimeLabels();
 
         datePickerTextView.setOnClickListener(v -> {
-            DatePickerDialog.OnDateSetListener dateSetListener = (view, year, monthOfYear, dayOfMonth) -> {
+            DatePickerDialog.OnDateSetListener dateSetListener = (view, year, month, day) -> {
                 calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, monthOfYear);
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, day);
                 updateDateTimeLabels();
             };
-
-            new DatePickerDialog(this,
-                    dateSetListener,
-                    calendar.get(Calendar.YEAR),
-                    calendar.get(Calendar.MONTH),
+            new DatePickerDialog(this, dateSetListener,
+                    calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH)).show();
         });
 
         timePickerTextView.setOnClickListener(v -> {
-            TimePickerDialog.OnTimeSetListener timeSetListener = (view, hourOfDay, minute) -> {
-                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            TimePickerDialog.OnTimeSetListener timeSetListener = (view, hour, minute) -> {
+                calendar.set(Calendar.HOUR_OF_DAY, hour);
                 calendar.set(Calendar.MINUTE, minute);
                 updateDateTimeLabels();
             };
-
-            new TimePickerDialog(this,
-                    timeSetListener,
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    false).show();
+            new TimePickerDialog(this, timeSetListener,
+                    calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
         });
     }
 
@@ -295,6 +288,7 @@ public class calcu_add extends AppCompatActivity {
         timePickerTextView.setText(timeFormat.format(calendar.getTime()));
     }
 
+    // --- Calculator logic ---
     public void onNumberClick(View view) {
         Button button = (Button) view;
         expressionBuilder.append(button.getText().toString());
@@ -307,16 +301,10 @@ public class calcu_add extends AppCompatActivity {
 
         if (expressionBuilder.length() > 0) {
             char lastChar = expressionBuilder.charAt(expressionBuilder.length() - 1);
-            if (isOperator(lastChar)) {
-                expressionBuilder.setCharAt(expressionBuilder.length() - 1, operator.charAt(0));
-            } else {
-                expressionBuilder.append(operator);
-            }
-        } else if (operator.equals("-")) {
-            expressionBuilder.append(operator);
-        } else {
-            // Prevent starting with other operators
-        }
+            if (isOperator(lastChar)) expressionBuilder.setCharAt(expressionBuilder.length() - 1, operator.charAt(0));
+            else expressionBuilder.append(operator);
+        } else if (operator.equals("-")) expressionBuilder.append(operator);
+
         updateResult();
     }
 
@@ -326,12 +314,7 @@ public class calcu_add extends AppCompatActivity {
 
         try {
             double result = evaluate(expression);
-            String resultString;
-            if (result == (long) result) {
-                resultString = String.format("%d", (long) result);
-            } else {
-                resultString = String.format("%.2f", result);
-            }
+            String resultString = result == (long) result ? String.format("%d", (long) result) : String.format("%.2f", result);
             resultTextView.setText(resultString);
             expressionBuilder.setLength(0);
             expressionBuilder.append(resultString);
@@ -347,17 +330,17 @@ public class calcu_add extends AppCompatActivity {
         Stack<Character> ops = new Stack<>();
 
         for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i] >= '0' && tokens[i] <= '9' || tokens[i] == '.') {
+            if ((tokens[i] >= '0' && tokens[i] <= '9') || tokens[i] == '.') {
                 StringBuilder sbuf = new StringBuilder();
-                while (i < tokens.length && (tokens[i] >= '0' && tokens[i] <= '9' || tokens[i] == '.'))
+                while (i < tokens.length && ((tokens[i] >= '0' && tokens[i] <= '9') || tokens[i] == '.'))
                     sbuf.append(tokens[i++]);
                 values.push(Double.parseDouble(sbuf.toString()));
                 i--;
             } else if (isOperator(tokens[i])) {
-                 if (i == 0 && tokens[i] == '-') { // Handle negative starting number
+                if (i == 0 && tokens[i] == '-') { // negative first number
                     StringBuilder sbuf = new StringBuilder();
                     sbuf.append(tokens[i++]);
-                     while (i < tokens.length && (tokens[i] >= '0' && tokens[i] <= '9' || tokens[i] == '.'))
+                    while (i < tokens.length && ((tokens[i] >= '0' && tokens[i] <= '9') || tokens[i] == '.'))
                         sbuf.append(tokens[i++]);
                     values.push(Double.parseDouble(sbuf.toString()));
                     i--;
@@ -375,43 +358,10 @@ public class calcu_add extends AppCompatActivity {
         return values.pop();
     }
 
-    private boolean hasPrecedence(char op1, char op2) {
-        return (op2 != '(' && op2 != ')') && ((op1 != '*' && op1 != '/') || (op2 != '+' && op2 != '-'));
-    }
-
-    private double applyOp(char op, double b, double a) {
-        switch (op) {
-            case '+': return a + b;
-            case '-': return a - b;
-            case '*': return a * b;
-            case '/':
-                if (b == 0) throw new UnsupportedOperationException("Cannot divide by zero");
-                return a / b;
-        }
-        return 0;
-    }
-
-    public void onClearClick(View view) {
-        expressionBuilder.setLength(0);
-        updateResult();
-    }
-
-    public void onBackClick(View view) {
-        if (expressionBuilder.length() > 0) {
-            expressionBuilder.deleteCharAt(expressionBuilder.length() - 1);
-        }
-        updateResult();
-    }
-
-    private void updateResult() {
-        if (expressionBuilder.length() == 0) {
-            resultTextView.setText("0");
-        } else {
-            resultTextView.setText(expressionBuilder.toString());
-        }
-    }
-
-    private boolean isOperator(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/';
-    }
+    private boolean hasPrecedence(char op1, char op2) { return (op2 != '(' && op2 != ')') && ((op1 != '*' && op1 != '/') || (op2 != '+' && op2 != '-')); }
+    private double applyOp(char op, double b, double a) { switch (op) { case '+': return a+b; case '-': return a-b; case '*': return a*b; case '/': if(b==0) throw new UnsupportedOperationException("Cannot divide by zero"); return a/b; } return 0; }
+    private void onClearClick(View view) { expressionBuilder.setLength(0); updateResult(); }
+    private void onBackClick(View view) { if(expressionBuilder.length()>0) expressionBuilder.deleteCharAt(expressionBuilder.length()-1); updateResult(); }
+    private void updateResult() { resultTextView.setText(expressionBuilder.length()==0?"0":expressionBuilder.toString()); }
+    private boolean isOperator(char c) { return c=='+'||c=='-'||c=='*'||c=='/'; }
 }

@@ -1,5 +1,6 @@
 package com.bigo143.budgettracker;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,8 +21,10 @@ public class BudgetFragment extends Fragment {
     private BudgetedAdapter budgetedAdapter;
     private NotBudgetedAdapter notBudgetedAdapter;
 
-    ArrayList<CategoryModel> budgetedList = new ArrayList<>();
-    ArrayList<CategoryModel> notBudgetedList = new ArrayList<>();
+    private ArrayList<CategoryModel> budgetedList = new ArrayList<>();
+    private ArrayList<CategoryModel> notBudgetedList = new ArrayList<>();
+    private DatabaseHelper dbHelper;
+    private String currentUser = "john_doe"; // TODO: replace with actual logged-in username
 
     @Nullable
     @Override
@@ -30,6 +33,7 @@ public class BudgetFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         binding = FragmentBudgetBinding.inflate(inflater, container, false);
+        dbHelper = new DatabaseHelper(requireContext());
         return binding.getRoot();
     }
 
@@ -38,24 +42,42 @@ public class BudgetFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        setupSampleData();
+        loadBudgetedData();
+        loadNotBudgetedData();
         setupRecyclerViews();
     }
 
-    private void setupSampleData() {
+    private void loadBudgetedData() {
+        budgetedList.clear();
+        Cursor cursor = dbHelper.getBudgetedCategories(currentUser);
 
-        // ---- Budgeted Categories ----
-        budgetedList.add(new CategoryModel("Food", 150, 100, R.drawable.ic_food));
-        budgetedList.add(new CategoryModel("Transport", 300, 180, R.drawable.ic_transport));
-        budgetedList.add(new CategoryModel("Bills", 1000, 650, R.drawable.ic_bills));
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                double limit = cursor.getDouble(cursor.getColumnIndexOrThrow("amount"));
+                double spent = dbHelper.getTotalExpenseForCategory(currentUser, name); // optional method
+                int icon = getIconForCategory(name); // optional, map your drawables
+                budgetedList.add(new CategoryModel(name, limit, spent, icon));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+    }
 
-        // ---- Not Budgeted Categories ----
-        notBudgetedList.add(new CategoryModel("Shopping", 0, 0, R.drawable.ic_shopping));
-        notBudgetedList.add(new CategoryModel("Snacks", 0, 0, R.drawable.ic_snacks));
+    private void loadNotBudgetedData() {
+        notBudgetedList.clear();
+        Cursor cursor = dbHelper.getUnbudgetedCategories(currentUser);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                int icon = getIconForCategory(name); // optional
+                notBudgetedList.add(new CategoryModel(name, 0, 0, icon));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
     }
 
     private void setupRecyclerViews() {
-
         // Budgeted List
         budgetedAdapter = new BudgetedAdapter(budgetedList, requireContext());
         binding.rvBudgeted.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -65,5 +87,23 @@ public class BudgetFragment extends Fragment {
         notBudgetedAdapter = new NotBudgetedAdapter(notBudgetedList, requireContext());
         binding.rvNotBudgeted.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvNotBudgeted.setAdapter(notBudgetedAdapter);
+    }
+
+    // Example mapping of drawable icons for categories
+    private int getIconForCategory(String name) {
+        switch (name.toLowerCase()) {
+            case "food":
+                return R.drawable.ic_food;
+            case "transport":
+                return R.drawable.ic_transport;
+            case "bills":
+                return R.drawable.ic_bills;
+            case "shopping":
+                return R.drawable.ic_shopping;
+            case "snacks":
+                return R.drawable.ic_snacks;
+
+        }
+        return 0;
     }
 }
