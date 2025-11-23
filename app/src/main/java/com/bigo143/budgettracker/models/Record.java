@@ -14,7 +14,7 @@ public class Record {
     private String account;
     private double amount;
     private int type;
-    private String iconName;
+    private int iconResId;
 
     // ------------------------------------
     // REQUIRED: EMPTY CONSTRUCTOR
@@ -43,7 +43,7 @@ public class Record {
         this.account = account;
         this.amount = amount;
         this.type = type;
-        this.iconName = iconName;
+        this.iconResId = iconResId;
     }
 
     // ------------------------------------
@@ -61,5 +61,5 @@ public class Record {
 
     public int getType() { return type; }
 
-    public String getIconName() { return iconName; }
+    public int getIconName() { return iconResId; }
 }
