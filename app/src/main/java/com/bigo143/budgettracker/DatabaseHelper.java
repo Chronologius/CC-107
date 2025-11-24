@@ -83,6 +83,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_RECORD_AMOUNT + " REAL, " +
                 COL_RECORD_DATE + " TEXT, " +
                 COL_RECORD_NOTE + " TEXT)");
+
+
     }
 
     @Override
@@ -265,18 +267,38 @@ public boolean updateCategory(int id, String newName) {
 
     public Cursor getBudgetedCategories(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT c.name, b.amount FROM " + TABLE_BUDGETS + " b " +
-                        "JOIN " + TABLE_CATEGORIES + " c ON b.category_id = c.id " +
-                        "WHERE b.username = ?",
-                new String[]{username});
+
+        return db.rawQuery(
+                "SELECT c." + COL_CATEGORY_NAME + ", b." + COL_BUDGET_AMOUNT +
+                        " FROM " + TABLE_BUDGETS + " b " +
+                        "JOIN " + TABLE_CATEGORIES + " c " +
+                        "ON b." + COL_BUDGET_CATEGORY + " = c." + COL_CATEGORY_ID + " " +
+                        "WHERE b." + COL_BUDGET_USER + " = ?",
+                new String[]{username}
+        );
     }
+
 
     public Cursor getUnbudgetedCategories(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT c.name FROM " + TABLE_CATEGORIES + " c " +
-                        "WHERE c.username = ? AND c.id NOT IN (SELECT category_id FROM " + TABLE_BUDGETS + " WHERE username = ?)",
-                new String[]{username, username});
+
+        return db.rawQuery(
+                "SELECT c." + COL_CATEGORY_ID + ", " +
+                        "c." + COL_CATEGORY_NAME + ", " +
+                        "c." + COL_CATEGORY_TYPE + ", " +
+                        "c." + COL_CATEGORY_ICON +
+                        " FROM " + TABLE_CATEGORIES + " c " +
+                        "WHERE c." + COL_CATEGORY_USER + " = ? " +
+                        "AND c." + COL_CATEGORY_ID + " NOT IN (" +
+                        "SELECT " + COL_BUDGET_CATEGORY +
+                        " FROM " + TABLE_BUDGETS +
+                        " WHERE " + COL_BUDGET_USER + " = ?" +
+                        ")",
+                new String[]{username, username}
+        );
     }
+
+
 
     public double getTotalBudget(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -408,6 +430,109 @@ public boolean updateCategory(int id, String newName) {
                         "WHERE c.username = ? AND b.amount IS NULL",
                 new String[]{username});
     }
+
+    // ---------------- Account management ----------------
+    public Cursor getAccounts(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery(
+                "SELECT id, name FROM " + TABLE_CATEGORIES + " WHERE username = ? AND type = 'account'",
+                new String[]{username}
+        );
+    }
+
+
+    // ---------------- Helper methods for calcu_add ----------------
+    public int getCategoryIdByName(String username, String categoryName, String type) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        int categoryId = -1;
+        try {
+            cursor = db.rawQuery("SELECT id FROM " + TABLE_CATEGORIES + " WHERE username = ? AND name = ? AND type = ?",
+                    new String[]{username, categoryName, type});
+            if (cursor != null && cursor.moveToFirst()) {
+                categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting category ID: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return categoryId;
+    }
+
+    public int getAccountIdByName(String username, String accountName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        int accountId = -1;
+        try {
+            cursor = db.rawQuery("SELECT id FROM " + TABLE_CATEGORIES + " WHERE username = ? AND name = ?",
+                    new String[]{username, accountName});
+            if (cursor != null && cursor.moveToFirst()) {
+                accountId = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting account ID: " + e.getMessage());
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return accountId;
+    }
+
+    // ---------------- Transfer management ----------------
+    public boolean insertTransfer(String username, int fromAccountId, int toAccountId, double amount, String date, String note) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues fromValues = new ContentValues();
+        ContentValues toValues = new ContentValues();
+
+        try {
+            // Deduct from source account
+            fromValues.put(COL_RECORD_USER, username);
+            fromValues.put(COL_RECORD_CATEGORY, fromAccountId);
+            fromValues.put(COL_RECORD_TYPE, "transfer_out");
+            fromValues.put(COL_RECORD_AMOUNT, amount);
+            fromValues.put(COL_RECORD_DATE, date);
+            fromValues.put(COL_RECORD_NOTE, note);
+
+            // Add to destination account
+            toValues.put(COL_RECORD_USER, username);
+            toValues.put(COL_RECORD_CATEGORY, toAccountId);
+            toValues.put(COL_RECORD_TYPE, "transfer_in");
+            toValues.put(COL_RECORD_AMOUNT, amount);
+            toValues.put(COL_RECORD_DATE, date);
+            toValues.put(COL_RECORD_NOTE, note);
+
+            long outResult = db.insert(TABLE_RECORDS, null, fromValues);
+            long inResult = db.insert(TABLE_RECORDS, null, toValues);
+
+            return outResult != -1 && inResult != -1;
+        } catch (Exception e) {
+            Log.e(TAG, "Error inserting transfer: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // ---------------- Get categories by type ----------------
+    public Cursor getCategoriesByType(String username, String type) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM categories WHERE username = ? AND type = ?",
+                new String[]{username, type}
+        );
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                Log.d("DB_CHECK", "DB row: username=" + cursor.getString(cursor.getColumnIndexOrThrow("username"))
+                        + ", type=" + cursor.getString(cursor.getColumnIndexOrThrow("type"))
+                        + ", name=" + cursor.getString(cursor.getColumnIndexOrThrow("name")));
+            }
+        }
+
+        return cursor;
+    }
+
+
+
+
 
 
 }

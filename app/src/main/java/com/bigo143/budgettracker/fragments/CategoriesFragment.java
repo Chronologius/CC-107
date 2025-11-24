@@ -1,6 +1,9 @@
 package com.bigo143.budgettracker.fragments;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.app.AlertDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.LayoutInflater;
@@ -27,8 +30,12 @@ public class CategoriesFragment extends Fragment {
 
     private Button btnIncome, btnAccount, btnExpense, btnAdd;
     private DatabaseHelper dbHelper;
-    private String currentUser = "john_doe"; // Replace with actual user logic
+    //private String currentUser = "userOne";
+
+    // Replace with actual user logic
     private String currentType = "account";
+
+    private String currentUser ;
 
     private IncomeFragment incomeFragment;
     private AccountFragment accountFragment;
@@ -52,6 +59,9 @@ public class CategoriesFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+
+        SharedPreferences prefs = requireContext().getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        currentUser = prefs.getString("logged_in_user", null);
 
         View v = inflater.inflate(R.layout.fragment_categories, container, false);
 

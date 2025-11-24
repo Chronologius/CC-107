@@ -2,7 +2,9 @@ package com.bigo143.budgettracker;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
-import android.graphics.Color;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -27,7 +29,9 @@ import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
@@ -51,16 +55,23 @@ public class calcu_add extends AppCompatActivity {
     private Calendar calendar = Calendar.getInstance();
 
     private enum TransactionType { INCOME, TRANSFER, EXPENSE }
-    private TransactionType currentTransactionType = TransactionType.EXPENSE; // Default
+    private TransactionType currentTransactionType = TransactionType.EXPENSE;
 
     private DatabaseHelper dbHelper;
-    private String loggedInUser = "testUser"; // TODO: Replace with actual logged-in user
+    private String loggedInUser ; // Replace with real logged-in user
+
+    private List<String> accountList = new ArrayList<>();
+    private List<String> incomeCategoryList = new ArrayList<>();
+    private List<String> expenseCategoryList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.calcu_add_expenseincome);
+
+        SharedPreferences prefs = calcu_add.this.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE);
+        loggedInUser = prefs.getString("logged_in_user", null);
 
         // --- Initialize Database ---
         dbHelper = new DatabaseHelper(this);
@@ -85,9 +96,13 @@ public class calcu_add extends AppCompatActivity {
         datePickerTextView = findViewById(R.id.date_picker_text);
         timePickerTextView = findViewById(R.id.time_picker_text);
 
+        // --- Load data from database ---
+        loadAccountsFromDB();
+        loadCategoriesFromDB();
+
         // --- Setup dropdowns ---
-        setupDropdown(accountDropdown, R.array.account_choices);
-        setupDropdown(categoryDropdown, R.array.category_choices);
+        setupDropdown(accountDropdown, accountList);
+        setupDropdown(categoryDropdown, expenseCategoryList); // default is expense
 
         // --- Setup transaction type ---
         setupTransactionTypeSelection();
@@ -105,9 +120,42 @@ public class calcu_add extends AppCompatActivity {
         addTextWatchers();
     }
 
-    private void setupDropdown(AutoCompleteTextView dropdown, int arrayResourceId) {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                arrayResourceId, android.R.layout.simple_dropdown_item_1line);
+    private void loadAccountsFromDB() {
+        accountList.clear();
+        // Assuming DatabaseHelper has getAccounts(String username) returning Cursor with "name"
+        Cursor cursor = dbHelper.getAccounts(loggedInUser);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                accountList.add(cursor.getString(cursor.getColumnIndexOrThrow("name")));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+    }
+
+    private void loadCategoriesFromDB() {
+        incomeCategoryList.clear();
+        expenseCategoryList.clear();
+
+        Cursor incomeCursor = dbHelper.getCategoriesByType(loggedInUser, "income");
+        if (incomeCursor != null && incomeCursor.moveToFirst()) {
+            do {
+                incomeCategoryList.add(incomeCursor.getString(incomeCursor.getColumnIndexOrThrow("name")));
+            } while (incomeCursor.moveToNext());
+            incomeCursor.close();
+        }
+
+        Cursor expenseCursor = dbHelper.getCategoriesByType(loggedInUser, "expense");
+        if (expenseCursor != null && expenseCursor.moveToFirst()) {
+            do {
+                expenseCategoryList.add(expenseCursor.getString(expenseCursor.getColumnIndexOrThrow("name")));
+            } while (expenseCursor.moveToNext());
+            expenseCursor.close();
+        }
+    }
+
+    private void setupDropdown(AutoCompleteTextView dropdown, List<String> items) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, items);
         dropdown.setAdapter(adapter);
     }
 
@@ -131,27 +179,30 @@ public class calcu_add extends AppCompatActivity {
     }
 
     private void updateTransactionTypeUI() {
-        incomeTextView.setBackgroundColor(Color.TRANSPARENT);
-        transferTextView.setBackgroundColor(Color.TRANSPARENT);
-        expenseTextView.setBackgroundColor(Color.TRANSPARENT);
+        incomeTextView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        transferTextView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        expenseTextView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
 
         int highlightColor = ContextCompat.getColor(this, R.color.third);
 
         switch (currentTransactionType) {
             case INCOME:
                 incomeTextView.setBackgroundColor(highlightColor);
-                categoryDropdownLayout.setHint(getString(R.string.category_hint));
-                setupDropdown(categoryDropdown, R.array.category_choices);
+                categoryDropdownLayout.setHint("Select Category");
+                setupDropdown(categoryDropdown, incomeCategoryList);
+                setupDropdown(accountDropdown, accountList);
                 break;
             case TRANSFER:
                 transferTextView.setBackgroundColor(highlightColor);
-                categoryDropdownLayout.setHint(getString(R.string.to_account_hint));
-                setupDropdown(categoryDropdown, R.array.account_choices);
+                categoryDropdownLayout.setHint("To Account");
+                setupDropdown(categoryDropdown, accountList);
+                setupDropdown(accountDropdown, accountList);
                 break;
             case EXPENSE:
                 expenseTextView.setBackgroundColor(highlightColor);
-                categoryDropdownLayout.setHint(getString(R.string.category_hint));
-                setupDropdown(categoryDropdown, R.array.category_choices);
+                categoryDropdownLayout.setHint("Select Category");
+                setupDropdown(categoryDropdown, expenseCategoryList);
+                setupDropdown(accountDropdown, accountList);
                 break;
         }
     }
@@ -171,39 +222,43 @@ public class calcu_add extends AppCompatActivity {
     }
 
     private void setupSaveCancelButtons() {
-        findViewById(R.id.save_button).setOnClickListener(v -> {
-            if (!validateInput()) return;
-
-            double amount = Double.parseDouble(resultTextView.getText().toString());
-            String fromAccount = accountDropdown.getText().toString();
-            String category = categoryDropdown.getText().toString();
-            String note = notesEditText.getText().toString();
-            String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(calendar.getTime());
-
-            boolean success = false;
-
-            // Insert into database
-            switch (currentTransactionType) {
-                case INCOME:
-                    success = dbHelper.insertRecord(loggedInUser, Integer.parseInt(category), "income", amount, date, note);
-                    break;
-                case EXPENSE:
-                    success = dbHelper.insertRecord(loggedInUser, Integer.parseInt(category), "expense", amount, date, note);
-                    break;
-                case TRANSFER:
-                    success = dbHelper.insertRecord(loggedInUser, Integer.parseInt(category), "transfer", amount, date, note);
-                    break;
-            }
-
-            if (success) {
-                Toast.makeText(this, "Transaction saved", Toast.LENGTH_SHORT).show();
-                finish();
-            } else {
-                Toast.makeText(this, "Error saving transaction", Toast.LENGTH_SHORT).show();
-            }
-        });
-
+        findViewById(R.id.save_button).setOnClickListener(v -> saveTransaction());
         findViewById(R.id.cancel_button).setOnClickListener(v -> finish());
+    }
+
+    private void saveTransaction() {
+        if (!validateInput()) return;
+
+        double amount = Double.parseDouble(resultTextView.getText().toString());
+        String fromAccount = accountDropdown.getText().toString();
+        String categoryOrTo = categoryDropdown.getText().toString();
+        String note = notesEditText.getText().toString();
+        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(calendar.getTime());
+
+        boolean success = false;
+
+        switch (currentTransactionType) {
+            case INCOME:
+                int incomeCatId = dbHelper.getCategoryIdByName(loggedInUser, categoryOrTo, "income");
+                success = dbHelper.insertRecord(loggedInUser, incomeCatId, "income", amount, date, note);
+                break;
+            case EXPENSE:
+                int expenseCatId = dbHelper.getCategoryIdByName(loggedInUser, categoryOrTo, "expense");
+                success = dbHelper.insertRecord(loggedInUser, expenseCatId, "expense", amount, date, note);
+                break;
+            case TRANSFER:
+                int fromAccountId = dbHelper.getAccountIdByName(loggedInUser, fromAccount);
+                int toAccountId = dbHelper.getAccountIdByName(loggedInUser, categoryOrTo);
+                success = dbHelper.insertTransfer(loggedInUser, fromAccountId, toAccountId, amount, date, note);
+                break;
+        }
+
+        if (success) {
+            Toast.makeText(this, "Transaction saved", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            Toast.makeText(this, "Error saving transaction", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private boolean validateInput() {
@@ -212,28 +267,28 @@ public class calcu_add extends AppCompatActivity {
         String amount = resultTextView.getText().toString();
 
         if (fromAccount.isEmpty()) {
-            accountDropdownLayout.setError(getString(R.string.error_select_account));
+            accountDropdownLayout.setError("Select account");
             return false;
         }
 
         if (currentTransactionType == TransactionType.TRANSFER) {
             if (to.isEmpty()) {
-                categoryDropdownLayout.setError(getString(R.string.error_select_to_account));
+                categoryDropdownLayout.setError("Select target account");
                 return false;
             }
             if (fromAccount.equals(to)) {
-                categoryDropdownLayout.setError(getString(R.string.error_same_account));
+                categoryDropdownLayout.setError("Cannot transfer to same account");
                 return false;
             }
         } else {
             if (to.isEmpty()) {
-                categoryDropdownLayout.setError(getString(R.string.error_select_category));
+                categoryDropdownLayout.setError("Select category");
                 return false;
             }
         }
 
         if (Double.parseDouble(amount) == 0) {
-            Toast.makeText(this, getString(R.string.error_zero_amount), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Amount cannot be zero", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -364,4 +419,5 @@ public class calcu_add extends AppCompatActivity {
     private void onBackClick(View view) { if(expressionBuilder.length()>0) expressionBuilder.deleteCharAt(expressionBuilder.length()-1); updateResult(); }
     private void updateResult() { resultTextView.setText(expressionBuilder.length()==0?"0":expressionBuilder.toString()); }
     private boolean isOperator(char c) { return c=='+'||c=='-'||c=='*'||c=='/'; }
+
 }

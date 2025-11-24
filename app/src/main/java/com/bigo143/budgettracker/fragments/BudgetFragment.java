@@ -87,11 +87,18 @@ public class BudgetFragment extends Fragment {
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
+
+                // 🔥 FILTER ONLY EXPENSE CATEGORIES
+                String type = cursor.getString(cursor.getColumnIndexOrThrow("type"));
+                if (!type.equals("expense")) continue;
+
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 double limit = cursor.getDouble(cursor.getColumnIndexOrThrow("amount"));
                 double spent = dbHelper.getTotalExpenseForCategory(currentUser, name);
                 int icon = getIconForCategory(name);
+
                 budgetedList.add(new CategoryModel(name, limit, spent, icon));
+
             } while (cursor.moveToNext());
             cursor.close();
         }
@@ -103,9 +110,16 @@ public class BudgetFragment extends Fragment {
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
+
+                // 🔥 FILTER ONLY EXPENSE CATEGORIES
+                String type = cursor.getString(cursor.getColumnIndexOrThrow("type"));
+                if (!type.equals("expense")) continue;
+
                 String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                 int icon = getIconForCategory(name);
+
                 notBudgetedList.add(new CategoryModel(name, 0, 0, icon));
+
             } while (cursor.moveToNext());
             cursor.close();
         }
