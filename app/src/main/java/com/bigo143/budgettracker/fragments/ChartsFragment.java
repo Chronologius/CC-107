@@ -3,6 +3,9 @@ package com.bigo143.budgettracker.fragments;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -23,10 +26,12 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 
+
 public class ChartsFragment extends Fragment {
 
     public ChartsFragment() {
         // Required empty public constructor
+        setHasOptionsMenu(true); // enables toolbar menu
     }
 
     @Nullable
@@ -41,6 +46,38 @@ public class ChartsFragment extends Fragment {
 
         return view;
     }
+
+    // --------------------------
+    // MENU (Calendar / Filter / Search)
+    // --------------------------
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_normal, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        int id = item.getItemId();  // GOOD — Java allows this
+
+//        if (id == R.id.action_calendar) {
+//            // open calendar modal
+//            return true;
+//
+//        } else if (id == R.id.action_filter) {
+//            // open filter modal
+//            return true;         } else
+
+        if (id == R.id.action_search) {
+            // open search UI
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
 
     private void setupPie(View view) {
         PieChart pie = view.findViewById(R.id.pieChart);
