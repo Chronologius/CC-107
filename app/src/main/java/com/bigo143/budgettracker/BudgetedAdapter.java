@@ -9,8 +9,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bigo143.budgettracker.R;
-import com.bigo143.budgettracker.CategoryModel;
+
+import com.bigo143.budgettracker.models.CategoryModel;
 
 import java.util.ArrayList;
 

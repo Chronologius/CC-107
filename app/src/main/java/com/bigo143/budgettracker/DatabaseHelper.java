@@ -12,7 +12,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TAG = "DatabaseHelper";
 
     private static final String DATABASE_NAME = "budget_tracker.db";
-    private static final int DATABASE_VERSION = 3; // incremented to force upgrade
+    private static final int DATABASE_VERSION = 6; // Increment to force upgrade
 
     // --- Users table ---
     private static final String TABLE_USERS = "users";
@@ -27,6 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_CATEGORY_USER = "username";
     public static final String COL_CATEGORY_TYPE = "type";
     public static final String COL_CATEGORY_NAME = "name";
+    public static final String COL_CATEGORY_ICON = "icon"; // New column
 
     // --- Budgets table ---
     private static final String TABLE_BUDGETS = "budgets";
@@ -58,52 +59,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_EMAIL + " TEXT UNIQUE, " +
                 COL_PASSWORD + " TEXT)");
 
-        // Categories table
+        // Categories table with icon column
         db.execSQL("CREATE TABLE " + TABLE_CATEGORIES + " (" +
                 COL_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_CATEGORY_USER + " TEXT, " +
                 COL_CATEGORY_TYPE + " TEXT, " +
-                COL_CATEGORY_NAME + " TEXT)");
-
-        // Budgets table
-        db.execSQL("CREATE TABLE " + TABLE_BUDGETS + " (" +
-                COL_BUDGET_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_BUDGET_USER + " TEXT, " +
-                COL_BUDGET_CATEGORY + " TEXT, " +
-                COL_BUDGET_AMOUNT + " REAL)");
-
-        // Records table
-        db.execSQL("CREATE TABLE " + TABLE_RECORDS + " (" +
-                COL_RECORD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_RECORD_USER + " TEXT, " +
-                COL_RECORD_CATEGORY + " TEXT, " +
-                COL_RECORD_TYPE + " TEXT, " +
-                COL_RECORD_AMOUNT + " REAL, " +
-                COL_RECORD_DATE + " TEXT, " +
-                COL_RECORD_NOTE + " TEXT)");
-    }
-
-    @Override
-
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.w(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
-
-        // Drop old tables only if necessary (optional)
-        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
-        // db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORIES);
-
-        // Create new tables if they don't exist
-        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_USERS + " (" +
-                COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_USERNAME + " TEXT UNIQUE, " +
-                COL_EMAIL + " TEXT UNIQUE, " +
-                COL_PASSWORD + " TEXT)");
-
-        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_CATEGORIES + " (" +
-                COL_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_CATEGORY_USER + " TEXT, " +
-                COL_CATEGORY_TYPE + " TEXT, " +
-                COL_CATEGORY_NAME + " TEXT)");
+                COL_CATEGORY_NAME + " TEXT, " +
+                COL_CATEGORY_ICON + " INTEGER DEFAULT " + R.drawable.ic_default + ")");
 
         // Budgets table
         db.execSQL("CREATE TABLE " + TABLE_BUDGETS + " (" +
@@ -116,16 +78,58 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + TABLE_RECORDS + " (" +
                 COL_RECORD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_RECORD_USER + " TEXT, " +
-                COL_RECORD_CATEGORY + " TEXT, " +
+                COL_RECORD_CATEGORY + " INTEGER, " +
                 COL_RECORD_TYPE + " TEXT, " +
                 COL_RECORD_AMOUNT + " REAL, " +
                 COL_RECORD_DATE + " TEXT, " +
                 COL_RECORD_NOTE + " TEXT)");
     }
 
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.w(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
+
+        // Add icon column safely if it doesn't exist
+        if (oldVersion < 6) {
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_CATEGORIES +
+                        " ADD COLUMN " + COL_CATEGORY_ICON + " INTEGER DEFAULT " + R.drawable.ic_default);
+            } catch (Exception e) {
+                Log.e(TAG, "Error adding icon column: " + e.getMessage());
+            }
+        }
+
+        // Ensure other tables exist
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_USERS + " (" +
+                COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_USERNAME + " TEXT UNIQUE, " +
+                COL_EMAIL + " TEXT UNIQUE, " +
+                COL_PASSWORD + " TEXT)");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_CATEGORIES + " (" +
+                COL_CATEGORY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_CATEGORY_USER + " TEXT, " +
+                COL_CATEGORY_TYPE + " TEXT, " +
+                COL_CATEGORY_NAME + " TEXT, " +
+                COL_CATEGORY_ICON + " INTEGER DEFAULT " + R.drawable.ic_default + ")");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_BUDGETS + " (" +
+                COL_BUDGET_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_BUDGET_USER + " TEXT, " +
+                COL_BUDGET_CATEGORY + " INTEGER, " +
+                COL_BUDGET_AMOUNT + " REAL)");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_RECORDS + " (" +
+                COL_RECORD_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_RECORD_USER + " TEXT, " +
+                COL_RECORD_CATEGORY + " INTEGER, " +
+                COL_RECORD_TYPE + " TEXT, " +
+                COL_RECORD_AMOUNT + " REAL, " +
+                COL_RECORD_DATE + " TEXT, " +
+                COL_RECORD_NOTE + " TEXT)");
+    }
 
     // ---------------- User management ----------------
-
     public boolean registerUser(String username, String email, String password) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -150,7 +154,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE username = ? AND password = ?",
                     new String[]{username, password});
-            exists = cursor != null && cursor.getCount() > 0;
+            if (cursor != null && cursor.moveToFirst()) {
+                exists = true;
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error logging in: " + e.getMessage());
         } finally {
@@ -168,7 +174,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             cursor = db.rawQuery("SELECT * FROM " + TABLE_USERS + " WHERE email = ?",
                     new String[]{email});
-            exists = cursor != null && cursor.getCount() > 0;
+            if (cursor != null && cursor.moveToFirst()) {
+                exists = true;
+            }
         } catch (Exception e) {
             Log.e(TAG, "Error checking user exists: " + e.getMessage());
         } finally {
@@ -179,13 +187,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // ---------------- Category management ----------------
-
-    public boolean insertCategory(String username, String type, String name) {
+    public boolean insertCategory(String username, String type, String name, int icon) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_CATEGORY_USER, username);
         values.put(COL_CATEGORY_TYPE, type);
         values.put(COL_CATEGORY_NAME, name);
+        values.put(COL_CATEGORY_ICON, icon);
 
         try {
             long result = db.insert(TABLE_CATEGORIES, null, values);
@@ -207,7 +215,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public boolean updateCategory(int id, String newName) {
+    // -----------------------------------------------
+
+
+
+public boolean updateCategory(int id, String newName) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COL_CATEGORY_NAME, newName);
@@ -349,7 +361,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             if (categoryId != -1) {
                 cursor = db.rawQuery("SELECT SUM(amount) FROM " + TABLE_RECORDS + " WHERE username = ? AND category_id = ? AND type = 'expense'",
-                        new String[]{username, String.valueOf(categoryId)});
+                        new String[]{username, java.lang.String.valueOf(categoryId)});
                 if (cursor != null && cursor.moveToFirst()) {
                     total = cursor.getDouble(0);
                     cursor.close();
@@ -375,7 +387,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             cursor = db.rawQuery(
                     "SELECT SUM(amount) FROM records WHERE username = ? AND category_id = ?",
-                    new String[]{username, String.valueOf(categoryId)});
+                    new String[]{username, java.lang.String.valueOf(categoryId)});
             if (cursor.moveToFirst()) {
                 total = cursor.getDouble(0);
             }

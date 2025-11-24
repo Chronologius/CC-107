@@ -15,11 +15,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bigo143.budgettracker.BudgetedAdapter;
-import com.bigo143.budgettracker.CategoryModel;
 import com.bigo143.budgettracker.DatabaseHelper;
 import com.bigo143.budgettracker.NotBudgetedAdapter;
 import com.bigo143.budgettracker.R;
 import com.bigo143.budgettracker.databinding.FragmentBudgetBinding;
+import com.bigo143.budgettracker.models.CategoryModel;
 
 import java.util.ArrayList;
 
