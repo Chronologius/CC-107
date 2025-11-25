@@ -7,6 +7,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bigo143.budgettracker.DatabaseHelper;
 import com.bigo143.budgettracker.R;
 import com.bigo143.budgettracker.RecordAdapter;
 import com.bigo143.budgettracker.models.Record;
@@ -27,28 +29,43 @@ public class RecordsFragment extends Fragment {
     private RecordAdapter adapter;
     private List<Record> fullList = new ArrayList<>();
 
+
+    private TextView tvIncome, tvExpense, tvTotal; // move TextViews here
+    private DatabaseHelper db;
+    private String currentUser = "userOne";
+
     public RecordsFragment() {
         setHasOptionsMenu(true); // enables toolbar menu
     }
 
-    @Nullable
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_records, container, false);
 
+        // RecyclerView
         recyclerView = view.findViewById(R.id.recyclerRecords);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        loadSampleData();
-
+        // Adapter
         adapter = new RecordAdapter(requireContext(), fullList);
         recyclerView.setAdapter(adapter);
 
+        // Summary TextViews
+        tvIncome = view.findViewById(R.id.tvIncome);
+        tvExpense = view.findViewById(R.id.tvExpense);
+        tvTotal = view.findViewById(R.id.tvTotal);
+
+        // Database
+        db = new DatabaseHelper(requireContext());
+
+        // Load transactions safely after views are initialized
+        loadTransactions();
+
         return view;
     }
+
 
     // --------------------------
     // MENU (Calendar / Filter / Search)
@@ -82,14 +99,34 @@ public class RecordsFragment extends Fragment {
     // --------------------------
     // Sample Data
     // --------------------------
-    private void loadSampleData() {
+
+
+    private void loadTransactions() {
+
+        List<Record> records = db.getAllTransactions(currentUser);
+
         fullList.clear();
 
-        fullList.add(Record.header("Jan 15, 2025"));
-        fullList.add(new Record("Food", "Cash", 50.0, Record.TYPE_EXPENSE, "ic_food"));
-        fullList.add(new Record("Salary", "Bank", 5000, Record.TYPE_INCOME, "ic_salary"));
+        String lastDate = "";
+        for (Record r : records) {
+            String recordDate = r.getDate().split(" ")[0]; // YYYY-MM-DD
+            if (!recordDate.equals(lastDate)) {
+                fullList.add(Record.header(recordDate));
+                lastDate = recordDate;
+            }
+            fullList.add(r);
+        }
 
-        fullList.add(Record.header("Jan 14, 2025"));
-        fullList.add(new Record("Transfer", "Bank → Wallet", 500, Record.TYPE_TRANSFER, "ic_transfer"));
+        adapter.notifyDataSetChanged();
+
+        // Update summary
+        double totalIncome = db.getTotalIncome(currentUser);
+        double totalExpense = db.getTotalExpense(currentUser);
+        double total = totalIncome - totalExpense;
+
+        tvIncome.setText("₱" + totalIncome);
+        tvExpense.setText("₱" + totalExpense);
+        tvTotal.setText("₱" + total);
     }
+
 }

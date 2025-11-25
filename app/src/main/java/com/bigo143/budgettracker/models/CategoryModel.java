@@ -6,6 +6,11 @@ public class CategoryModel {
     private String subtitle; // optional (balance / tag)
     private double amount; // optional
 
+
+    private double limit;
+    private double spent;
+    private int icon;
+
     public CategoryModel(String name, int iconRes){
         this.name = name;
         this.iconRes = iconRes;
@@ -20,8 +25,20 @@ public class CategoryModel {
         this.amount = amount;
     }
 
+    public CategoryModel(String name, double limit, double spent, int icon) {
+        this.name = name;
+        this.limit = limit;
+        this.spent = spent;
+        this.icon = icon;
+    }
+
     public String getName(){ return name; }
     public int getIconRes(){ return iconRes; }
     public String getSubtitle(){ return subtitle; }
     public double getAmount(){ return amount; }
+
+
+    public double getLimit() { return limit; }
+    public double getSpent() { return spent; }
+    public int getIcon() { return icon; }
 }

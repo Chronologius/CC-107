@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bigo143.budgettracker.models.CategoryModel;
+
 import java.util.ArrayList;
 
 public class NotBudgetedAdapter extends RecyclerView.Adapter<NotBudgetedAdapter.ViewHolder> {

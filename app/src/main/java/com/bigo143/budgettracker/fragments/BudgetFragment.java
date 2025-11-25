@@ -1,5 +1,6 @@
 package com.bigo143.budgettracker.fragments;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,10 +15,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bigo143.budgettracker.BudgetedAdapter;
-import com.bigo143.budgettracker.CategoryModel;
+import com.bigo143.budgettracker.DatabaseHelper;
 import com.bigo143.budgettracker.NotBudgetedAdapter;
 import com.bigo143.budgettracker.R;
 import com.bigo143.budgettracker.databinding.FragmentBudgetBinding;
+import com.bigo143.budgettracker.models.CategoryModel;
 
 import java.util.ArrayList;
 
@@ -27,8 +29,10 @@ public class BudgetFragment extends Fragment {
     private BudgetedAdapter budgetedAdapter;
     private NotBudgetedAdapter notBudgetedAdapter;
 
-    ArrayList<CategoryModel> budgetedList = new ArrayList<>();
-    ArrayList<CategoryModel> notBudgetedList = new ArrayList<>();
+    private ArrayList<CategoryModel> budgetedList = new ArrayList<>();
+    private ArrayList<CategoryModel> notBudgetedList = new ArrayList<>();
+    private DatabaseHelper dbHelper;
+    private String currentUser = "john_doe"; // TODO: replace with actual logged-in username
 
     public BudgetFragment() {
         // Required empty public constructor
@@ -42,6 +46,7 @@ public class BudgetFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
 
         binding = FragmentBudgetBinding.inflate(inflater, container, false);
+        dbHelper = new DatabaseHelper(requireContext());
         return binding.getRoot();
     }
 
@@ -50,7 +55,8 @@ public class BudgetFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        setupSampleData();
+        loadBudgetedData();
+        loadNotBudgetedData();
         setupRecyclerViews();
     }
 
@@ -65,15 +71,7 @@ public class BudgetFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        int id = item.getItemId();  // GOOD — Java allows this
-
-//        if (id == R.id.action_calendar) {
-//            // open calendar modal
-//            return true;
-//
-//        } else if (id == R.id.action_filter) {
-//            // open filter modal
-//            return true;         } else
+        int id = item.getItemId();
 
         if (id == R.id.action_search) {
             // open search UI
@@ -83,20 +81,51 @@ public class BudgetFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-    private void setupSampleData() {
+    private void loadBudgetedData() {
+        budgetedList.clear();
+        Cursor cursor = dbHelper.getBudgetedCategories(currentUser);
 
-        // ---- Budgeted Categories ----
-        budgetedList.add(new CategoryModel("Food", 150, 100, R.drawable.ic_food));
-        budgetedList.add(new CategoryModel("Transport", 300, 180, R.drawable.ic_transport));
-        budgetedList.add(new CategoryModel("Bills", 1000, 650, R.drawable.ic_bills));
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
 
-        // ---- Not Budgeted Categories ----
-        notBudgetedList.add(new CategoryModel("Shopping", 0, 0, R.drawable.ic_shopping));
-        notBudgetedList.add(new CategoryModel("Snacks", 0, 0, R.drawable.ic_snacks));
+                // 🔥 FILTER ONLY EXPENSE CATEGORIES
+                String type = cursor.getString(cursor.getColumnIndexOrThrow("type"));
+                if (!type.equals("expense")) continue;
+
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                double limit = cursor.getDouble(cursor.getColumnIndexOrThrow("amount"));
+                double spent = dbHelper.getTotalExpenseForCategory(currentUser, name);
+                int icon = getIconForCategory(name);
+
+                budgetedList.add(new CategoryModel(name, limit, spent, icon));
+
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+    }
+
+    private void loadNotBudgetedData() {
+        notBudgetedList.clear();
+        Cursor cursor = dbHelper.getUnbudgetedCategories(currentUser);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+
+                // 🔥 FILTER ONLY EXPENSE CATEGORIES
+                String type = cursor.getString(cursor.getColumnIndexOrThrow("type"));
+                if (!type.equals("expense")) continue;
+
+                String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                int icon = getIconForCategory(name);
+
+                notBudgetedList.add(new CategoryModel(name, 0, 0, icon));
+
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
     }
 
     private void setupRecyclerViews() {
-
         // Budgeted List
         budgetedAdapter = new BudgetedAdapter(budgetedList, requireContext());
         binding.rvBudgeted.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -106,5 +135,21 @@ public class BudgetFragment extends Fragment {
         notBudgetedAdapter = new NotBudgetedAdapter(notBudgetedList, requireContext());
         binding.rvNotBudgeted.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvNotBudgeted.setAdapter(notBudgetedAdapter);
+    }
+
+    private int getIconForCategory(String name) {
+        switch (name.toLowerCase()) {
+            case "food":
+                return R.drawable.ic_food;
+            case "transport":
+                return R.drawable.ic_transport;
+            case "bills":
+                return R.drawable.ic_bills;
+            case "shopping":
+                return R.drawable.ic_shopping;
+            case "snacks":
+                return R.drawable.ic_snacks;
+        }
+        return 0;
     }
 }

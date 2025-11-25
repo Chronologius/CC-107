@@ -9,8 +9,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bigo143.budgettracker.R;
-import com.bigo143.budgettracker.CategoryModel;
+
+import com.bigo143.budgettracker.models.CategoryModel;
 
 import java.util.ArrayList;
 
@@ -40,7 +40,12 @@ public class BudgetedAdapter extends RecyclerView.Adapter<BudgetedAdapter.ViewHo
         holder.spent.setText("Spent: ₱" + model.getSpent());
         holder.icon.setImageResource(model.getIcon());
 
-        int percentage = (int) ((model.getSpent() / model.getLimit()) * 100);
+        // Safely calculate percentage
+        int percentage = 0;
+        if (model.getLimit() > 0) {
+            percentage = (int) ((model.getSpent() / model.getLimit()) * 100);
+            if (percentage > 100) percentage = 100; // cap to 100%
+        }
         holder.progressBar.setProgress(percentage);
     }
 
