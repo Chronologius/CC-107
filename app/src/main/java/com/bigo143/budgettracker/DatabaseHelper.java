@@ -7,6 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.bigo143.budgettracker.models.Record;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
@@ -529,6 +534,41 @@ public boolean updateCategory(int id, String newName) {
 
         return cursor;
     }
+    public List<Record> getAllTransactions(String username) {
+        List<Record> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT r.id, r.category_id, r.type, r.amount, r.date, r.note, " +
+                        "c.name, c.icon " +
+                        "FROM records r " +
+                        "LEFT JOIN categories c ON r.category_id = c.id " +
+                        "WHERE r.username = ? " +
+                        "ORDER BY r.date DESC",
+                new String[]{username}
+        );
+
+        if (cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                int categoryId = cursor.getInt(cursor.getColumnIndexOrThrow("category_id"));
+                String typeStr = cursor.getString(cursor.getColumnIndexOrThrow("type"));
+                double amount = cursor.getDouble(cursor.getColumnIndexOrThrow("amount"));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+                String note = cursor.getString(cursor.getColumnIndexOrThrow("note"));
+                String categoryName = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                int icon = cursor.getInt(cursor.getColumnIndexOrThrow("icon"));
+
+                Record record = new Record(id, categoryId, categoryName, typeStr, amount, date, note, icon);
+                list.add(record);
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return list;
+    }
+
 
 
 

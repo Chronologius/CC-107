@@ -12,10 +12,8 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,257 +35,246 @@ import java.util.Stack;
 
 public class calcu_add extends AppCompatActivity {
 
-    private TextView resultTextView;
-    private EditText notesEditText;
-    private AutoCompleteTextView accountDropdown;
-    private AutoCompleteTextView categoryDropdown;
-    private TextInputLayout accountDropdownLayout;
-    private TextInputLayout categoryDropdownLayout;
+    private TextView tvResult, tvIncome, tvTransfer, tvExpense;
+    private EditText etNotes;
+    private AutoCompleteTextView ddAccount, ddCategory;
+    private TextInputLayout lyAccount, lyCategory;
 
-    private TextView incomeTextView;
-    private TextView transferTextView;
-    private TextView expenseTextView;
+    private TextView tvDatePicker, tvTimePicker;
 
-    private TextView datePickerTextView;
-    private TextView timePickerTextView;
+    private enum TxType { INCOME, TRANSFER, EXPENSE }
+    private TxType currentType = TxType.EXPENSE;
 
-    private StringBuilder expressionBuilder = new StringBuilder();
-    private Calendar calendar = Calendar.getInstance();
+    private final StringBuilder expression = new StringBuilder();
+    private final Calendar calendar = Calendar.getInstance();
 
-    private enum TransactionType { INCOME, TRANSFER, EXPENSE }
-    private TransactionType currentTransactionType = TransactionType.EXPENSE;
+    private DatabaseHelper db;
+    private String loggedInUser;
 
-    private DatabaseHelper dbHelper;
-    private String loggedInUser ; // Replace with real logged-in user
+    private final List<String> accounts = new ArrayList<>();
+    private final List<String> incomeCats = new ArrayList<>();
+    private final List<String> expenseCats = new ArrayList<>();
 
-    private List<String> accountList = new ArrayList<>();
-    private List<String> incomeCategoryList = new ArrayList<>();
-    private List<String> expenseCategoryList = new ArrayList<>();
-
+    // ***********************************************
+    //  ACTIVITIES
+    // ***********************************************
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.calcu_add_expenseincome);
 
-        SharedPreferences prefs = calcu_add.this.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE);
+        // Get logged in username
+        SharedPreferences prefs = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE);
         loggedInUser = prefs.getString("logged_in_user", null);
 
-        // --- Initialize Database ---
-        dbHelper = new DatabaseHelper(this);
+        db = new DatabaseHelper(this);
 
-        ConstraintLayout mainLayout = findViewById(R.id.main_layout);
-        ViewCompat.setOnApplyWindowInsetsListener(mainLayout, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+        initViews();
+        setupInsets();
+        loadData();
+        setupDropdowns();
+        setupTypeButtons();
+        setupCalculatorButtons();
+        setupSaveCancel();
+        setupDateTimePickers();
+        addInputWatchers();
+    }
+
+    private void initViews() {
+        tvResult = findViewById(R.id.result);
+        etNotes = findViewById(R.id.notes_edittext);
+
+        ddAccount = findViewById(R.id.account_dropdown);
+        ddCategory = findViewById(R.id.category_dropdown);
+
+        lyAccount = findViewById(R.id.account_dropdown_layout);
+        lyCategory = findViewById(R.id.category_dropdown_layout);
+
+        tvIncome = findViewById(R.id.text_income);
+        tvTransfer = findViewById(R.id.text_transfer);
+        tvExpense = findViewById(R.id.text_Expense);
+
+        tvDatePicker = findViewById(R.id.date_picker_text);
+        tvTimePicker = findViewById(R.id.time_picker_text);
+    }
+
+    private void setupInsets() {
+        ConstraintLayout main = findViewById(R.id.main_layout);
+        ViewCompat.setOnApplyWindowInsetsListener(main, (v, insets) -> {
+            Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(sb.left, sb.top, sb.right, sb.bottom);
             return insets;
         });
-
-        // --- Initialize views ---
-        resultTextView = findViewById(R.id.result);
-        notesEditText = findViewById(R.id.notes_edittext);
-        accountDropdown = findViewById(R.id.account_dropdown);
-        accountDropdownLayout = findViewById(R.id.account_dropdown_layout);
-        categoryDropdown = findViewById(R.id.category_dropdown);
-        categoryDropdownLayout = findViewById(R.id.category_dropdown_layout);
-        incomeTextView = findViewById(R.id.text_income);
-        transferTextView = findViewById(R.id.text_transfer);
-        expenseTextView = findViewById(R.id.text_Expense);
-        datePickerTextView = findViewById(R.id.date_picker_text);
-        timePickerTextView = findViewById(R.id.time_picker_text);
-
-        // --- Load data from database ---
-        loadAccountsFromDB();
-        loadCategoriesFromDB();
-
-        // --- Setup dropdowns ---
-        setupDropdown(accountDropdown, accountList);
-        setupDropdown(categoryDropdown, expenseCategoryList); // default is expense
-
-        // --- Setup transaction type ---
-        setupTransactionTypeSelection();
-
-        // --- Setup calculator buttons ---
-        setupCalculatorButtons();
-
-        // --- Save & Cancel buttons ---
-        setupSaveCancelButtons();
-
-        // --- Date & Time pickers ---
-        setupDateTimePickers();
-
-        // --- Clear error on input ---
-        addTextWatchers();
     }
 
-    private void loadAccountsFromDB() {
-        accountList.clear();
-        // Assuming DatabaseHelper has getAccounts(String username) returning Cursor with "name"
-        Cursor cursor = dbHelper.getAccounts(loggedInUser);
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                accountList.add(cursor.getString(cursor.getColumnIndexOrThrow("name")));
-            } while (cursor.moveToNext());
-            cursor.close();
+    // ***********************************************
+    //  LOAD DB DATA
+    // ***********************************************
+    private void loadData() {
+        accounts.clear();
+        incomeCats.clear();
+        expenseCats.clear();
+
+        Cursor a = db.getAccounts(loggedInUser);
+        if (a != null && a.moveToFirst()) {
+            do accounts.add(a.getString(a.getColumnIndexOrThrow("name")));
+            while (a.moveToNext());
+            a.close();
+        }
+
+        Cursor in = db.getCategoriesByType(loggedInUser, "income");
+        if (in != null && in.moveToFirst()) {
+            do incomeCats.add(in.getString(in.getColumnIndexOrThrow("name")));
+            while (in.moveToNext());
+            in.close();
+        }
+
+        Cursor ex = db.getCategoriesByType(loggedInUser, "expense");
+        if (ex != null && ex.moveToFirst()) {
+            do expenseCats.add(ex.getString(ex.getColumnIndexOrThrow("name")));
+            while (ex.moveToNext());
+            ex.close();
         }
     }
 
-    private void loadCategoriesFromDB() {
-        incomeCategoryList.clear();
-        expenseCategoryList.clear();
-
-        Cursor incomeCursor = dbHelper.getCategoriesByType(loggedInUser, "income");
-        if (incomeCursor != null && incomeCursor.moveToFirst()) {
-            do {
-                incomeCategoryList.add(incomeCursor.getString(incomeCursor.getColumnIndexOrThrow("name")));
-            } while (incomeCursor.moveToNext());
-            incomeCursor.close();
-        }
-
-        Cursor expenseCursor = dbHelper.getCategoriesByType(loggedInUser, "expense");
-        if (expenseCursor != null && expenseCursor.moveToFirst()) {
-            do {
-                expenseCategoryList.add(expenseCursor.getString(expenseCursor.getColumnIndexOrThrow("name")));
-            } while (expenseCursor.moveToNext());
-            expenseCursor.close();
-        }
+    private void setupDropdowns() {
+        setAdapter(ddAccount, accounts);
+        setAdapter(ddCategory, expenseCats); // default type = EXPENSE
     }
 
-    private void setupDropdown(AutoCompleteTextView dropdown, List<String> items) {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, items);
-        dropdown.setAdapter(adapter);
+    private void setAdapter(AutoCompleteTextView view, List<String> list) {
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, list);
+        view.setAdapter(adapter);
     }
 
-    private void setupTransactionTypeSelection() {
-        updateTransactionTypeUI();
+    // ***********************************************
+    //  TRANSACTION TYPE UI
+    // ***********************************************
+    private void setupTypeButtons() {
+        tvIncome.setOnClickListener(v -> switchType(TxType.INCOME));
+        tvTransfer.setOnClickListener(v -> switchType(TxType.TRANSFER));
+        tvExpense.setOnClickListener(v -> switchType(TxType.EXPENSE));
 
-        incomeTextView.setOnClickListener(v -> {
-            currentTransactionType = TransactionType.INCOME;
-            updateTransactionTypeUI();
-        });
-
-        transferTextView.setOnClickListener(v -> {
-            currentTransactionType = TransactionType.TRANSFER;
-            updateTransactionTypeUI();
-        });
-
-        expenseTextView.setOnClickListener(v -> {
-            currentTransactionType = TransactionType.EXPENSE;
-            updateTransactionTypeUI();
-        });
+        switchType(TxType.EXPENSE);
     }
 
-    private void updateTransactionTypeUI() {
-        incomeTextView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-        transferTextView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-        expenseTextView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+    private void switchType(TxType type) {
+        currentType = type;
 
-        int highlightColor = ContextCompat.getColor(this, R.color.third);
+        // reset highlights
+        tvIncome.setBackgroundColor(0);
+        tvTransfer.setBackgroundColor(0);
+        tvExpense.setBackgroundColor(0);
 
-        switch (currentTransactionType) {
+        int hl = ContextCompat.getColor(this, R.color.third);
+
+        switch (type) {
             case INCOME:
-                incomeTextView.setBackgroundColor(highlightColor);
-                categoryDropdownLayout.setHint("Select Category");
-                setupDropdown(categoryDropdown, incomeCategoryList);
-                setupDropdown(accountDropdown, accountList);
+                tvIncome.setBackgroundColor(hl);
+                lyCategory.setHint("Select Category");
+                setAdapter(ddCategory, incomeCats);
+                setAdapter(ddAccount, accounts);
                 break;
+
             case TRANSFER:
-                transferTextView.setBackgroundColor(highlightColor);
-                categoryDropdownLayout.setHint("To Account");
-                setupDropdown(categoryDropdown, accountList);
-                setupDropdown(accountDropdown, accountList);
+                tvTransfer.setBackgroundColor(hl);
+                lyCategory.setHint("To Account");
+                setAdapter(ddCategory, accounts);
+                setAdapter(ddAccount, accounts);
                 break;
+
             case EXPENSE:
-                expenseTextView.setBackgroundColor(highlightColor);
-                categoryDropdownLayout.setHint("Select Category");
-                setupDropdown(categoryDropdown, expenseCategoryList);
-                setupDropdown(accountDropdown, accountList);
+                tvExpense.setBackgroundColor(hl);
+                lyCategory.setHint("Select Category");
+                setAdapter(ddCategory, expenseCats);
+                setAdapter(ddAccount, accounts);
                 break;
         }
     }
 
-    private void setupCalculatorButtons() {
-        int[] numberButtonIds = {R.id.button_0, R.id.button_1, R.id.button_2, R.id.button_3,
-                R.id.button_4, R.id.button_5, R.id.button_6, R.id.button_7, R.id.button_8,
-                R.id.button_9, R.id.button_00, R.id.button_dot};
-        for (int id : numberButtonIds) findViewById(id).setOnClickListener(this::onNumberClick);
-
-        int[] operatorButtonIds = {R.id.button_add, R.id.button_subtract, R.id.button_multiply, R.id.button_divide};
-        for (int id : operatorButtonIds) findViewById(id).setOnClickListener(this::onOperatorClick);
-
-        findViewById(R.id.button_equal).setOnClickListener(this::onEqualsClick);
-        findViewById(R.id.clear_button).setOnClickListener(this::onClearClick);
-        findViewById(R.id.back_button).setOnClickListener(this::onBackClick);
-    }
-
-    private void setupSaveCancelButtons() {
-        findViewById(R.id.save_button).setOnClickListener(v -> saveTransaction());
+    // ***********************************************
+    //  SAVE TRANSACTION
+    // ***********************************************
+    private void setupSaveCancel() {
+        findViewById(R.id.save_button).setOnClickListener(v -> save());
         findViewById(R.id.cancel_button).setOnClickListener(v -> finish());
     }
 
-    private void saveTransaction() {
-        if (!validateInput()) return;
+    private void save() {
+        if (!validate()) return;
 
-        double amount = Double.parseDouble(resultTextView.getText().toString());
-        String fromAccount = accountDropdown.getText().toString();
-        String categoryOrTo = categoryDropdown.getText().toString();
-        String note = notesEditText.getText().toString();
-        String date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(calendar.getTime());
+        double amount = Double.parseDouble(tvResult.getText().toString());
+        String fromAcc = ddAccount.getText().toString();
+        String categoryOrTarget = ddCategory.getText().toString();
+        String note = etNotes.getText().toString();
 
-        boolean success = false;
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
+                .format(calendar.getTime());
 
-        switch (currentTransactionType) {
+        boolean ok;
+
+        switch (currentType) {
             case INCOME:
-                int incomeCatId = dbHelper.getCategoryIdByName(loggedInUser, categoryOrTo, "income");
-                success = dbHelper.insertRecord(loggedInUser, incomeCatId, "income", amount, date, note);
+                int incId = db.getCategoryIdByName(loggedInUser, categoryOrTarget, "income");
+                ok = db.insertRecord(loggedInUser, incId, "income", amount, timestamp, note);
                 break;
+
             case EXPENSE:
-                int expenseCatId = dbHelper.getCategoryIdByName(loggedInUser, categoryOrTo, "expense");
-                success = dbHelper.insertRecord(loggedInUser, expenseCatId, "expense", amount, date, note);
+                int expId = db.getCategoryIdByName(loggedInUser, categoryOrTarget, "expense");
+                ok = db.insertRecord(loggedInUser, expId, "expense", amount, timestamp, note);
                 break;
+
             case TRANSFER:
-                int fromAccountId = dbHelper.getAccountIdByName(loggedInUser, fromAccount);
-                int toAccountId = dbHelper.getAccountIdByName(loggedInUser, categoryOrTo);
-                success = dbHelper.insertTransfer(loggedInUser, fromAccountId, toAccountId, amount, date, note);
+                int aFrom = db.getAccountIdByName(loggedInUser, fromAcc);
+                int aTo = db.getAccountIdByName(loggedInUser, categoryOrTarget);
+                ok = db.insertTransfer(loggedInUser, aFrom, aTo, amount, timestamp, note);
                 break;
+
+            default:
+                ok = false;
         }
 
-        if (success) {
-            Toast.makeText(this, "Transaction saved", Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            Toast.makeText(this, "Error saving transaction", Toast.LENGTH_SHORT).show();
+        if (!ok) {
+            Toast.makeText(this, "Saving failed", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        Toast.makeText(this, "Transaction Saved!", Toast.LENGTH_SHORT).show();
+        finish();
     }
 
-    private boolean validateInput() {
-        String fromAccount = accountDropdown.getText().toString();
-        String to = categoryDropdown.getText().toString();
-        String amount = resultTextView.getText().toString();
+    private boolean validate() {
+        lyAccount.setError(null);
+        lyCategory.setError(null);
 
-        if (fromAccount.isEmpty()) {
-            accountDropdownLayout.setError("Select account");
+        String acc = ddAccount.getText().toString();
+        String cat = ddCategory.getText().toString();
+        String amount = tvResult.getText().toString();
+
+        if (acc.isEmpty()) {
+            lyAccount.setError("Please select an account");
             return false;
         }
 
-        if (currentTransactionType == TransactionType.TRANSFER) {
-            if (to.isEmpty()) {
-                categoryDropdownLayout.setError("Select target account");
+        if (currentType == TxType.TRANSFER) {
+            if (cat.isEmpty()) {
+                lyCategory.setError("Select target account");
                 return false;
             }
-            if (fromAccount.equals(to)) {
-                categoryDropdownLayout.setError("Cannot transfer to same account");
+            if (acc.equals(cat)) {
+                lyCategory.setError("Cannot transfer to same account");
                 return false;
             }
         } else {
-            if (to.isEmpty()) {
-                categoryDropdownLayout.setError("Select category");
+            if (cat.isEmpty()) {
+                lyCategory.setError("Please select category");
                 return false;
             }
         }
 
-        if (Double.parseDouble(amount) == 0) {
+        if (amount.equals("0") || amount.isEmpty()) {
             Toast.makeText(this, "Amount cannot be zero", Toast.LENGTH_SHORT).show();
             return false;
         }
@@ -295,129 +282,171 @@ public class calcu_add extends AppCompatActivity {
         return true;
     }
 
-    private void addTextWatchers() {
-        accountDropdown.addTextChangedListener(new TextWatcher() {
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            public void onTextChanged(CharSequence s, int start, int before, int count) { accountDropdownLayout.setError(null); }
-            public void afterTextChanged(Editable s) {}
-        });
-
-        categoryDropdown.addTextChangedListener(new TextWatcher() {
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            public void onTextChanged(CharSequence s, int start, int before, int count) { categoryDropdownLayout.setError(null); }
-            public void afterTextChanged(Editable s) {}
-        });
-    }
-
+    // ***********************************************
+    //  DATE & TIME PICKERS
+    // ***********************************************
     private void setupDateTimePickers() {
         updateDateTimeLabels();
 
-        datePickerTextView.setOnClickListener(v -> {
-            DatePickerDialog.OnDateSetListener dateSetListener = (view, year, month, day) -> {
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, day);
+        tvDatePicker.setOnClickListener(v -> {
+            new DatePickerDialog(this, (view, y, m, d) -> {
+                calendar.set(y, m, d);
                 updateDateTimeLabels();
-            };
-            new DatePickerDialog(this, dateSetListener,
-                    calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+            }, calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
                     calendar.get(Calendar.DAY_OF_MONTH)).show();
         });
 
-        timePickerTextView.setOnClickListener(v -> {
-            TimePickerDialog.OnTimeSetListener timeSetListener = (view, hour, minute) -> {
-                calendar.set(Calendar.HOUR_OF_DAY, hour);
-                calendar.set(Calendar.MINUTE, minute);
+        tvTimePicker.setOnClickListener(v -> {
+            new TimePickerDialog(this, (view, h, m) -> {
+                calendar.set(Calendar.HOUR_OF_DAY, h);
+                calendar.set(Calendar.MINUTE, m);
                 updateDateTimeLabels();
-            };
-            new TimePickerDialog(this, timeSetListener,
-                    calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false).show();
+            }, calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    false).show();
         });
     }
 
     private void updateDateTimeLabels() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy", Locale.US);
-        datePickerTextView.setText(dateFormat.format(calendar.getTime()));
+        tvDatePicker.setText(new SimpleDateFormat("MM/dd/yyyy", Locale.US)
+                .format(calendar.getTime()));
 
-        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm a", Locale.US);
-        timePickerTextView.setText(timeFormat.format(calendar.getTime()));
+        tvTimePicker.setText(new SimpleDateFormat("hh:mm a", Locale.US)
+                .format(calendar.getTime()));
     }
 
-    // --- Calculator logic ---
-    public void onNumberClick(View view) {
-        Button button = (Button) view;
-        expressionBuilder.append(button.getText().toString());
+    // ***********************************************
+    //  CALCULATOR LOGIC
+    // ***********************************************
+    private void setupCalculatorButtons() {
+        int[] numbers = {
+                R.id.button_0, R.id.button_1, R.id.button_2, R.id.button_3,
+                R.id.button_4, R.id.button_5, R.id.button_6, R.id.button_7,
+                R.id.button_8, R.id.button_9, R.id.button_00, R.id.button_dot
+        };
+        for (int id : numbers)
+            findViewById(id).setOnClickListener(this::numClick);
+
+        int[] ops = {R.id.button_add, R.id.button_subtract, R.id.button_multiply, R.id.button_divide};
+        for (int id : ops)
+            findViewById(id).setOnClickListener(this::opClick);
+
+        findViewById(R.id.button_equal).setOnClickListener(this::equalClick);
+        findViewById(R.id.clear_button).setOnClickListener(v -> { expression.setLength(0); updateResult(); });
+        findViewById(R.id.back_button).setOnClickListener(v -> {
+            if (expression.length() > 0) expression.deleteCharAt(expression.length() - 1);
+            updateResult();
+        });
+    }
+
+    private void numClick(View v) {
+        expression.append(((Button)v).getText());
         updateResult();
     }
 
-    public void onOperatorClick(View view) {
-        Button button = (Button) view;
-        String operator = button.getText().toString();
+    private void opClick(View v) {
+        char op = ((Button)v).getText().charAt(0);
 
-        if (expressionBuilder.length() > 0) {
-            char lastChar = expressionBuilder.charAt(expressionBuilder.length() - 1);
-            if (isOperator(lastChar)) expressionBuilder.setCharAt(expressionBuilder.length() - 1, operator.charAt(0));
-            else expressionBuilder.append(operator);
-        } else if (operator.equals("-")) expressionBuilder.append(operator);
+        if (expression.length() == 0) {
+            if (op == '-') expression.append(op);
+            updateResult();
+            return;
+        }
+
+        char last = expression.charAt(expression.length() - 1);
+        if (isOp(last)) expression.setCharAt(expression.length() - 1, op);
+        else expression.append(op);
 
         updateResult();
     }
 
-    public void onEqualsClick(View view) {
-        String expression = expressionBuilder.toString();
-        if (expression.isEmpty()) return;
-
+    private void equalClick(View v) {
         try {
-            double result = evaluate(expression);
-            String resultString = result == (long) result ? String.format("%d", (long) result) : String.format("%.2f", result);
-            resultTextView.setText(resultString);
-            expressionBuilder.setLength(0);
-            expressionBuilder.append(resultString);
+            double r = evaluate(expression.toString());
+            String displayed = (r == (long)r) ? String.valueOf((long)r) : String.format("%.2f", r);
+
+            tvResult.setText(displayed);
+            expression.setLength(0);
+            expression.append(displayed);
+
         } catch (Exception e) {
-            resultTextView.setText("Error");
-            expressionBuilder.setLength(0);
+            tvResult.setText("Error");
+            expression.setLength(0);
         }
     }
 
-    public double evaluate(String expression) {
-        char[] tokens = expression.toCharArray();
-        Stack<Double> values = new Stack<>();
+    private void updateResult() {
+        tvResult.setText(expression.length() == 0 ? "0" : expression.toString());
+    }
+
+    private boolean isOp(char c) { return c=='+'||c=='-'||c=='*'||c=='/'; }
+
+    // Expression evaluator (same but formatted)
+    public double evaluate(String exp) {
+        char[] arr = exp.toCharArray();
+        Stack<Double> vals = new Stack<>();
         Stack<Character> ops = new Stack<>();
 
-        for (int i = 0; i < tokens.length; i++) {
-            if ((tokens[i] >= '0' && tokens[i] <= '9') || tokens[i] == '.') {
-                StringBuilder sbuf = new StringBuilder();
-                while (i < tokens.length && ((tokens[i] >= '0' && tokens[i] <= '9') || tokens[i] == '.'))
-                    sbuf.append(tokens[i++]);
-                values.push(Double.parseDouble(sbuf.toString()));
+        for (int i = 0; i < arr.length; i++) {
+            if ((arr[i] >= '0' && arr[i] <= '9') || arr[i] == '.') {
+                StringBuilder sb = new StringBuilder();
+                while (i < arr.length && ((arr[i]>='0'&&arr[i]<='9')||arr[i]=='.'))
+                    sb.append(arr[i++]);
                 i--;
-            } else if (isOperator(tokens[i])) {
-                if (i == 0 && tokens[i] == '-') { // negative first number
-                    StringBuilder sbuf = new StringBuilder();
-                    sbuf.append(tokens[i++]);
-                    while (i < tokens.length && ((tokens[i] >= '0' && tokens[i] <= '9') || tokens[i] == '.'))
-                        sbuf.append(tokens[i++]);
-                    values.push(Double.parseDouble(sbuf.toString()));
+                vals.push(Double.parseDouble(sb.toString()));
+            }
+            else if (isOp(arr[i])) {
+                if (i == 0 && arr[i] == '-') {
+                    StringBuilder sb = new StringBuilder("-");
+                    i++;
+                    while (i < arr.length && ((arr[i]>='0'&&arr[i]<='9')||arr[i]=='.'))
+                        sb.append(arr[i++]);
                     i--;
+                    vals.push(Double.parseDouble(sb.toString()));
                     continue;
                 }
-                while (!ops.empty() && hasPrecedence(tokens[i], ops.peek()))
-                    values.push(applyOp(ops.pop(), values.pop(), values.pop()));
-                ops.push(tokens[i]);
+
+                while (!ops.empty() && hasPrec(arr[i], ops.peek()))
+                    vals.push(applyOp(ops.pop(), vals.pop(), vals.pop()));
+
+                ops.push(arr[i]);
             }
         }
 
         while (!ops.empty())
-            values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+            vals.push(applyOp(ops.pop(), vals.pop(), vals.pop()));
 
-        return values.pop();
+        return vals.pop();
     }
 
-    private boolean hasPrecedence(char op1, char op2) { return (op2 != '(' && op2 != ')') && ((op1 != '*' && op1 != '/') || (op2 != '+' && op2 != '-')); }
-    private double applyOp(char op, double b, double a) { switch (op) { case '+': return a+b; case '-': return a-b; case '*': return a*b; case '/': if(b==0) throw new UnsupportedOperationException("Cannot divide by zero"); return a/b; } return 0; }
-    private void onClearClick(View view) { expressionBuilder.setLength(0); updateResult(); }
-    private void onBackClick(View view) { if(expressionBuilder.length()>0) expressionBuilder.deleteCharAt(expressionBuilder.length()-1); updateResult(); }
-    private void updateResult() { resultTextView.setText(expressionBuilder.length()==0?"0":expressionBuilder.toString()); }
-    private boolean isOperator(char c) { return c=='+'||c=='-'||c=='*'||c=='/'; }
+    private boolean hasPrec(char a, char b) {
+        return (b!='('&&b!=')') && ((a!='*'&&a!='/') || (b!='+'&&b!='-'));
+    }
 
+    private double applyOp(char op, double b, double a) {
+        switch (op) {
+            case '+': return a+b;
+            case '-': return a-b;
+            case '*': return a*b;
+            case '/': if (b==0) throw new RuntimeException(); return a/b;
+        }
+        return 0;
+    }
+
+    // ***********************************************
+    //  INPUT ERROR CLEAR
+    // ***********************************************
+    private void addInputWatchers() {
+        ddAccount.addTextChangedListener(simpleWatcher(() -> lyAccount.setError(null)));
+        ddCategory.addTextChangedListener(simpleWatcher(() -> lyCategory.setError(null)));
+    }
+
+    private TextWatcher simpleWatcher(Runnable r) {
+        return new TextWatcher() {
+            public void beforeTextChanged(CharSequence s,int a,int b,int c){}
+            public void onTextChanged(CharSequence s,int a,int b,int c){ r.run(); }
+            public void afterTextChanged(Editable s){}
+        };
+    }
 }
