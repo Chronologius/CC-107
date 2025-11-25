@@ -20,8 +20,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-//import com.bigo143.budgettracker.fragments.BudgetFragment;
-//import com.bigo143.budgettracker.fragments.CategoriesFragment;
+import com.bigo143.budgettracker.fragments.BudgetFragment;
+import com.bigo143.budgettracker.fragments.CategoriesFragment;
 import com.bigo143.budgettracker.fragments.ChartsFragment;
 import com.bigo143.budgettracker.fragments.RecordsFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -43,9 +43,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize views
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        fab = findViewById(R.id.fab); // Correctly assign to the class field
+        drawerLayout = findViewById(R.id.drawer_layout); // Correctly assign
+        navigationView = findViewById(R.id.nav_view); // Correctly assign
         Toolbar toolbar = findViewById(R.id.toolbar);
 
         setSupportActionBar(toolbar);
@@ -85,17 +85,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Return fragment based on selected item ID (revised from switch to if-else)
+    // --- FIX 2: Enable the BudgetFragment logic ---
     private Fragment getSelectedFragment(int itemId) {
         if (itemId == R.id.records) {
             return new RecordsFragment();
         } else if (itemId == R.id.charts) {
             return new ChartsFragment();
-//        } else if (itemId == R.id.budget) {
-//            return new BudgetFragment();
-//        } else if (itemId == R.id.categories) {
-//            return new CategoriesFragment();
-        } else {
+        } else if (itemId == R.id.budget) {
+            return new BudgetFragment();
+        } else if (itemId == R.id.categories) {
+            return new CategoriesFragment();
+        }
+        else {
             return null;
         }
     }
@@ -121,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
         videoLayout.setOnClickListener(v -> {
             dialog.dismiss();
             Toast.makeText(MainActivity.this, "Setting Values", Toast.LENGTH_SHORT).show();
+            // Note: Make sure calcu_add.class exists
             startActivity(new Intent(MainActivity.this, calcu_add.class));
         });
 
@@ -134,13 +136,10 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(MainActivity.this, "Adding Record", Toast.LENGTH_SHORT).show();
         });
 
-//        cancelButton.setOnClickListener(view -> dialog.dismiss()); //Ill return this if i need X in fab
-
         dialog.show();
         if (dialog.getWindow() != null) {
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-//            dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
             dialog.getWindow().setGravity(Gravity.BOTTOM);
         }
     }
